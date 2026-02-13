@@ -1,0 +1,253 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0a0e17;
+    color: #e0e6ed;
+    overflow-x: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #0d1321 0%, #1a1f36 100%);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1e2a3a;
+}
+
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #00d4aa;
+    letter-spacing: 1px;
+}
+
+.header .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #8892a0;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00d4aa;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+    padding: 12px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.card {
+    background: #111827;
+    border: 1px solid #1e2a3a;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-header h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8892a0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.portfolio-card {
+    grid-column: 1 / -1;
+}
+
+.portfolio-stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #5a6577;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e0e6ed;
+}
+
+.stat-value.positive { color: #00d4aa; }
+.stat-value.negative { color: #ff4757; }
+
+.ticker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.ticker-item {
+    background: #0d1321;
+    border: 1px solid #1e2a3a;
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.ticker-item:hover, .ticker-item.active {
+    border-color: #00d4aa;
+}
+
+.ticker-symbol {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e0e6ed;
+    margin-bottom: 4px;
+}
+
+.ticker-price {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.ticker-change {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.positive { color: #00d4aa; }
+.negative { color: #ff4757; }
+
+.chart-container {
+    position: relative;
+    height: 280px;
+}
+
+.signal-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.signal-BUY { background: rgba(0, 212, 170, 0.15); color: #00d4aa; border: 1px solid #00d4aa; }
+.signal-SELL { background: rgba(255, 71, 87, 0.15); color: #ff4757; border: 1px solid #ff4757; }
+.signal-HOLD { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid #ffc107; }
+
+.predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.pred-item {
+    background: #0d1321;
+    border: 1px solid #1e2a3a;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+}
+
+.pred-symbol {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.pred-indicators {
+    font-size: 11px;
+    color: #5a6577;
+    margin-top: 6px;
+}
+
+.pred-indicators span {
+    display: block;
+    margin: 2px 0;
+}
+
+.trades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.trades-table th {
+    text-align: left;
+    padding: 8px;
+    color: #5a6577;
+    border-bottom: 1px solid #1e2a3a;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+.trades-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #0d1321;
+}
+
+.trades-table tr:hover {
+    background: #0d1321;
+}
+
+.action-BUY { color: #00d4aa; font-weight: 700; }
+.action-SELL { color: #ff4757; font-weight: 700; }
+
+.chart-card {
+    grid-column: 1 / -1;
+}
+
+.ticker-card {
+    grid-column: 1 / -1;
+}
+
+.predictions-card {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+    .dashboard {
+        grid-template-columns: 1fr;
+    }
+    .portfolio-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .ticker-grid, .predictions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
