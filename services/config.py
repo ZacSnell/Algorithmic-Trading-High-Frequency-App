@@ -4,10 +4,16 @@
 
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 import pytz
 import pandas as pd
 import numpy as np
 import yfinance as yf
+
+# Load environment variables from .env file
+from dotenv import load_dotenv
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 # TA-Lib with safe fallback
 try:
@@ -38,18 +44,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ────────────────────────────────────────────────
-#  LOAD SECRETS FROM ENVIRONMENT (Replit Secrets / .env / system)
+#  LOAD SECRETS FROM ENVIRONMENT (.env file)
 # ────────────────────────────────────────────────
-API_KEY    = os.getenv("PKQMM67ATX7PJJMNXGORAAY2D6")
-API_SECRET = os.getenv("Gi5WaGkJr9GpbGezszkhA8t3jkL2WysxnV4QpQi7B8Un")
+API_KEY    = os.getenv("ALPACA_API_KEY")
+API_SECRET = os.getenv("ALPACA_SECRET_KEY")
 
 if not API_KEY or not API_SECRET:
     raise ValueError(
-        "ALPACA_API_KEY and ALPACA_SECRET_KEY must be set in Replit Secrets "
-        "or as environment variables. Do NOT hardcode them!"
+        "ALPACA_API_KEY and ALPACA_SECRET_KEY must be set in .env file. "
+        "Copy .env.example and add your credentials!"
     )
 
-PAPER_MODE = True   # Change to False only when using LIVE keys
+PAPER_MODE = os.getenv("PAPER_MODE", "True").lower() in ("true", "1", "yes")
 
 # Constants
 TIMEZONE          = pytz.timezone('US/Eastern')
