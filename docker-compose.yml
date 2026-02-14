@@ -22,3 +22,15 @@ services:
     restart: always
     depends_on:
       - backend
+
+  live_trader:
+    build: ./services/live_trader
+    container_name: mltrading-live-trader
+    env_file:
+      - ./.env
+    volumes:
+      - ./services/models:/app/services/models
+      - ./services:/app/services
+    restart: always
+    depends_on:
+      - backend
