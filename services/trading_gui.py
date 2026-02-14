@@ -866,18 +866,27 @@ class TradingGUI(QMainWindow):
                     account = None
             
             if account:
-                self.account_labels['buying_power'].setText(f"${account['buying_power']:,.2f}")
-                self.account_labels['cash'].setText(f"${account['cash']:,.2f}")
-                self.account_labels['equity'].setText(f"${account['equity']:,.2f}")
-                self.account_labels['portfolio_value'].setText(f"${account['portfolio_value']:,.2f}")
+                # Ensure all values are floats for formatting
+                bp = float(account.get('buying_power', 0))
+                cash = float(account.get('cash', 0))
+                eq = float(account.get('equity', 0))
+                pv = float(account.get('portfolio_value', 0))
+                
+                self.account_labels['buying_power'].setText(f"${bp:,.2f}")
+                self.account_labels['cash'].setText(f"${cash:,.2f}")
+                self.account_labels['equity'].setText(f"${eq:,.2f}")
+                self.account_labels['portfolio_value'].setText(f"${pv:,.2f}")
         except Exception as e:
             logger.error(f"Error fetching account info: {e}")
     
     def update_dashboard(self):
         """Update dashboard data"""
-        if self.is_trading and self.trading_worker:
-            # Data updates come from trading worker signals
-            pass
+        try:
+            if self.is_trading and self.trading_worker:
+                # Data updates come from trading worker signals
+                pass
+        except Exception as e:
+            logger.error(f"Error updating dashboard: {e}")
     
     def refresh_trades(self):
         """Refresh trades table"""
@@ -886,9 +895,14 @@ class TradingGUI(QMainWindow):
             all_dates = self.trade_logger.get_available_dates()
             all_trades = []
             
-            for date in all_dates:
-                trades = self.trade_logger.get_daily_trades(date)
-                all_trades.extend(trades)
+            if all_dates:  # Only try to fetch trades if dates exist
+                for date in all_dates:
+                    try:
+                        trades = self.trade_logger.get_daily_trades(date)
+                        if trades:
+                            all_trades.extend(trades)
+                    except:
+                        pass  # Skip this date if error occurs
             
             # Filter trades
             symbol_filter = self.symbol_filter.text().upper()
@@ -908,66 +922,73 @@ class TradingGUI(QMainWindow):
             # Update recent trades table (last 10)
             self.recent_trades_table.setRowCount(0)
             for trade in filtered_trades[-10:]:
-                row = self.recent_trades_table.rowCount()
-                self.recent_trades_table.insertRow(row)
-                
-                self.recent_trades_table.setItem(row, 0, QTableWidgetItem(trade.get('symbol', '--')))
-                self.recent_trades_table.setItem(row, 1, QTableWidgetItem(trade.get('strategy', '--')))
-                self.recent_trades_table.setItem(row, 2, QTableWidgetItem(trade.get('side', '--')))
-                self.recent_trades_table.setItem(row, 3, QTableWidgetItem(str(trade.get('qty', 0))))
-                self.recent_trades_table.setItem(row, 4, QTableWidgetItem(f"${trade.get('entry_price', 0):.2f}"))
-                
-                exit_price = trade.get('exit_price')
-                self.recent_trades_table.setItem(
-                    row, 5,
-                    QTableWidgetItem(f"${exit_price:.2f}" if exit_price else "-")
-                )
-                
-                pnl = trade.get('pnl_amount', 0)
-                self.recent_trades_table.setItem(row, 6, QTableWidgetItem(f"${pnl:+,.2f}"))
-                
-                # Color code based on P&L
-                if trade.get('status') == 'CLOSED' and pnl > 0:
-                    for i in range(7):
-                        self.recent_trades_table.item(row, i).setBackground(QColor(200, 255, 200))
-                elif trade.get('status') == 'CLOSED' and pnl < 0:
-                    for i in range(7):
-                        self.recent_trades_table.item(row, i).setBackground(QColor(255, 200, 200))
+                try:
+                    row = self.recent_trades_table.rowCount()
+                    self.recent_trades_table.insertRow(row)
+                    
+                    self.recent_trades_table.setItem(row, 0, QTableWidgetItem(trade.get('symbol', '--')))
+                    self.recent_trades_table.setItem(row, 1, QTableWidgetItem(trade.get('strategy', '--')))
+                    self.recent_trades_table.setItem(row, 2, QTableWidgetItem(trade.get('side', '--')))
+                    self.recent_trades_table.setItem(row, 3, QTableWidgetItem(str(trade.get('qty', 0))))
+                    self.recent_trades_table.setItem(row, 4, QTableWidgetItem(f"${trade.get('entry_price', 0):.2f}"))
+                    
+                    exit_price = trade.get('exit_price')
+                    self.recent_trades_table.setItem(
+                        row, 5,
+                        QTableWidgetItem(f"${exit_price:.2f}" if exit_price else "-")
+                    )
+                    
+                    pnl = trade.get('pnl_amount', 0)
+                    self.recent_trades_table.setItem(row, 6, QTableWidgetItem(f"${pnl:+,.2f}"))
+                    
+                    # Color code based on P&L
+                    if trade.get('status') == 'CLOSED' and pnl > 0:
+                        for i in range(7):
+                            self.recent_trades_table.item(row, i).setBackground(QColor(200, 255, 200))
+                    elif trade.get('status') == 'CLOSED' and pnl < 0:
+                        for i in range(7):
+                            self.recent_trades_table.item(row, i).setBackground(QColor(255, 200, 200))
+                except:
+                    pass  # Skip this trade if error occurs
             
             # Update full trades table
             self.trades_table.setRowCount(0)
             for trade in reversed(filtered_trades):
-                row = self.trades_table.rowCount()
-                self.trades_table.insertRow(row)
-                
-                self.trades_table.setItem(row, 0, QTableWidgetItem(str(trade.get('date', '--'))))
-                self.trades_table.setItem(row, 1, QTableWidgetItem(trade.get('symbol', '--')))
-                self.trades_table.setItem(row, 2, QTableWidgetItem(trade.get('strategy', '--')))
-                self.trades_table.setItem(row, 3, QTableWidgetItem(trade.get('side', '--')))
-                self.trades_table.setItem(row, 4, QTableWidgetItem(str(trade.get('qty', 0))))
-                self.trades_table.setItem(row, 5, QTableWidgetItem(f"${trade.get('entry_price', 0):.2f}"))
-                
-                entry_time = trade.get('entry_time', "-")
-                if entry_time != "-" and len(entry_time) > 8:
-                    entry_time = entry_time[-8:]
-                self.trades_table.setItem(row, 6, QTableWidgetItem(entry_time))
-                
-                exit_price = trade.get('exit_price', 0)
-                self.trades_table.setItem(row, 7, QTableWidgetItem(f"${exit_price:.2f}" if exit_price else "-"))
-                
-                exit_time = trade.get('exit_time', "-")
-                if exit_time != "-" and len(exit_time) > 8:
-                    exit_time = exit_time[-8:]
-                self.trades_table.setItem(row, 8, QTableWidgetItem(exit_time))
-                
-                pnl_pct = trade.get('pnl_pct', 0) * 100 if trade.get('pnl_pct') else 0
-                self.trades_table.setItem(row, 9, QTableWidgetItem(f"{pnl_pct:+.2f}%"))
-                
-                pnl_amount = trade.get('pnl_amount', 0)
-                self.trades_table.setItem(row, 10, QTableWidgetItem(f"${pnl_amount:+,.2f}"))
+                try:
+                    row = self.trades_table.rowCount()
+                    self.trades_table.insertRow(row)
+                    
+                    self.trades_table.setItem(row, 0, QTableWidgetItem(str(trade.get('date', '--'))))
+                    self.trades_table.setItem(row, 1, QTableWidgetItem(trade.get('symbol', '--')))
+                    self.trades_table.setItem(row, 2, QTableWidgetItem(trade.get('strategy', '--')))
+                    self.trades_table.setItem(row, 3, QTableWidgetItem(trade.get('side', '--')))
+                    self.trades_table.setItem(row, 4, QTableWidgetItem(str(trade.get('qty', 0))))
+                    self.trades_table.setItem(row, 5, QTableWidgetItem(f"${trade.get('entry_price', 0):.2f}"))
+                    
+                    entry_time = trade.get('entry_time', "-")
+                    if entry_time != "-" and len(entry_time) > 8:
+                        entry_time = entry_time[-8:]
+                    self.trades_table.setItem(row, 6, QTableWidgetItem(entry_time))
+                    
+                    exit_price = trade.get('exit_price', 0)
+                    self.trades_table.setItem(row, 7, QTableWidgetItem(f"${exit_price:.2f}" if exit_price else "-"))
+                    
+                    exit_time = trade.get('exit_time', "-")
+                    if exit_time != "-" and len(exit_time) > 8:
+                        exit_time = exit_time[-8:]
+                    self.trades_table.setItem(row, 8, QTableWidgetItem(exit_time))
+                    
+                    pnl_pct = trade.get('pnl_pct', 0) * 100 if trade.get('pnl_pct') else 0
+                    self.trades_table.setItem(row, 9, QTableWidgetItem(f"{pnl_pct:+.2f}%"))
+                    
+                    pnl_amount = trade.get('pnl_amount', 0)
+                    self.trades_table.setItem(row, 10, QTableWidgetItem(f"${pnl_amount:+,.2f}"))
+                except:
+                    pass  # Skip this trade if error occurs
         
         except Exception as e:
-            print(f"Error refreshing trades: {e}")
+            logger.error(f"Error refreshing trades: {e}")
+
     
     def train_model(self):
         """Train model for current strategy"""
