@@ -16,10 +16,8 @@ from PyQt5.QtWidgets import (
     QStatusBar, QMessageBox, QProgressBar, QGroupBox, QGridLayout,
     QFrame
 )
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject, QThread
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject, QThread, QPointF
 from PyQt5.QtGui import QFont, QColor, QIcon, QPixmap
-from PyQt5.QtChart import QChart, QChartView, QLineSeries
-from PyQt5.QtCore import QPointF
 
 # Add services directory to path
 sys.path.insert(0, str(Path(__file__).parent / "services"))
