@@ -1,7 +1,7 @@
 # build_dataset.py
 from config import *  # ← This brings in everything!
-API_KEY = "YOUR_ALPACA_PAPER_KEY"
-API_SECRET = "YOUR_ALPACA_PAPER_SECRET"
+API_KEY = "PKQMM67ATX7PJJMNXGORAAY2D6"
+API_SECRET = "Gi5WaGkJr9GpbGezszkhA8t3jkL2WysxnV4QpQi7B8Un"
 PAPER = True
 
 # Clients
