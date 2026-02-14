@@ -208,6 +208,7 @@ def get_date_range(days_back=DAYS_BACK):
 def save_settings_to_env(settings_dict):
     """
     Save trading settings to .env file for persistence across restarts.
+    Preserves comments, blank lines, and other configuration.
     
     Args:
         settings_dict: Dictionary of settings to save
@@ -216,7 +217,6 @@ def save_settings_to_env(settings_dict):
             - take_profit_pct: take profit percentage
             - max_open_positions: max concurrent positions
             - ml_model_type: "random_forest" or "gradient_boosting"
-            - strategy_min_confidence: minimum confidence for current strategy
     
     Returns:
         bool: True if successful, False otherwise
@@ -228,40 +228,56 @@ def save_settings_to_env(settings_dict):
         return False
     
     try:
-        # Read current .env file
-        env_vars = {}
+        # Read current .env file preserving structure (comments, blank lines, etc.)
         with open(env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    env_vars[key.strip()] = value.strip()
+            lines = f.readlines()
         
-        # Update with new settings
+        # Create mapping of keys to update
+        updates = {}
         if 'position_size_pct' in settings_dict:
-            env_vars['POSITION_SIZE_PCT'] = str(settings_dict['position_size_pct'])
+            updates['POSITION_SIZE_PCT'] = settings_dict['position_size_pct']
             POSITION_SIZE_PCT = settings_dict['position_size_pct']
-        
         if 'stop_loss_pct' in settings_dict:
-            env_vars['STOP_LOSS_PCT'] = str(settings_dict['stop_loss_pct'])
+            updates['STOP_LOSS_PCT'] = settings_dict['stop_loss_pct']
             STOP_LOSS_PCT = settings_dict['stop_loss_pct']
-        
         if 'take_profit_pct' in settings_dict:
-            env_vars['TAKE_PROFIT_PCT'] = str(settings_dict['take_profit_pct'])
+            updates['TAKE_PROFIT_PCT'] = settings_dict['take_profit_pct']
             TAKE_PROFIT_PCT = settings_dict['take_profit_pct']
-        
         if 'max_open_positions' in settings_dict:
-            env_vars['MAX_OPEN_POSITIONS'] = str(settings_dict['max_open_positions'])
+            updates['MAX_OPEN_POSITIONS'] = settings_dict['max_open_positions']
             MAX_OPEN_POSITIONS = settings_dict['max_open_positions']
-        
         if 'ml_model_type' in settings_dict:
-            env_vars['ML_MODEL_TYPE'] = settings_dict['ml_model_type']
+            updates['ML_MODEL_TYPE'] = settings_dict['ml_model_type']
             ML_MODEL_TYPE = settings_dict['ml_model_type']
+        
+        # Process lines, updating only matching keys
+        updated_keys = set()
+        output_lines = []
+        
+        for line in lines:
+            # Check if this line contains a key we want to update
+            updated = False
+            line_stripped = line.strip()
+            
+            if line_stripped and not line_stripped.startswith('#') and '=' in line_stripped:
+                key = line_stripped.split('=', 1)[0].strip()
+                if key in updates:
+                    output_lines.append(f"{key}={updates[key]}\n")
+                    updated_keys.add(key)
+                    updated = True
+            
+            # If we didn't update this line, keep it as-is
+            if not updated:
+                output_lines.append(line)
+        
+        # Add any new keys that weren't in the original file
+        for key, value in updates.items():
+            if key not in updated_keys:
+                output_lines.append(f"{key}={value}\n")
         
         # Write back to .env file
         with open(env_path, 'w') as f:
-            for key, value in env_vars.items():
-                f.write(f"{key}={value}\n")
+            f.writelines(output_lines)
         
         logger.info(f"Settings saved to {env_path}")
         return True
