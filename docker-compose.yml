@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  backend:
+    build: ./services/backend
+    container_name: mltrading-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./services/backend/.env
+    volumes:
+      - ./services/backend/backend.db:/app/backend.db
+    restart: always
+
+  trainer:
+    build: ./services/daemon
+    container_name: mltrading-trainer
+    env_file:
+      - ./.env
+    volumes:
+      - ./services/models:/app/services/models
+      - ./services:/app/services
+    restart: always
+    depends_on:
+      - backend

@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+SQLAlchemy
+alembic
+pydantic
+python-dotenv
+cryptography
+psycopg2-binary  # Optional for Postgres in production
