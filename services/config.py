@@ -12,8 +12,34 @@ import yfinance as yf
 
 # Load environment variables from .env file
 from dotenv import load_dotenv
-env_path = Path(__file__).parent / ".env"
-load_dotenv(dotenv_path=env_path)
+
+# Try multiple locations for .env file
+possible_env_paths = [
+    Path.cwd() / ".env",                    # Current working directory
+    Path(__file__).parent / ".env",         # Services directory
+    Path(__file__).parent.parent / ".env",  # Root directory
+]
+
+env_path = None
+for path in possible_env_paths:
+    if path.exists():
+        env_path = path
+        break
+
+if env_path:
+    load_dotenv(dotenv_path=env_path)
+    # Also manually read and set env vars as fallback for PyInstaller
+    try:
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+    except Exception as e:
+        print(f"Warning: Could not manually load .env: {e}")
+else:
+    print("WARNING: No .env file found in any expected location")
 
 # TA-Lib with safe fallback
 try:
