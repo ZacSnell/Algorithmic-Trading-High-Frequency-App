@@ -23,16 +23,21 @@ class MLTrainer:
         self.feature_columns = None
         self.train_date = None
         
-    def get_training_data(self):
-        """Load and combine all available CSV files from build_dataset.py"""
-        csv_files = glob.glob("*.csv")
-        csv_files = [f for f in csv_files if "labeled" in f and f != "combined_dataset.csv"]
+    def get_training_data(self, strategy='macd_crossover'):
+        """Load and combine all available CSV files for a specific strategy"""
+        # Look for strategy-specific CSV files
+        csv_files = glob.glob(f"*_{strategy}_labeled.csv")
         
         if not csv_files:
-            logger.warning("No training data found. Run build_dataset.py first!")
+            # Fall back to general labeled files
+            csv_files = glob.glob("*_labeled.csv")
+            csv_files = [f for f in csv_files if "combined" not in f]
+        
+        if not csv_files:
+            logger.warning(f"No training data found for strategy: {strategy}. Run build_dataset.py first!")
             return None
         
-        logger.info(f"Loading {len(csv_files)} training files")
+        logger.info(f"Loading {len(csv_files)} training files for {strategy}")
         all_data = []
         
         for file in csv_files:
@@ -172,13 +177,13 @@ class MLTrainer:
             'recall': recall
         }
     
-    def save_model(self, model, model_type):
-        """Save trained model and scaler to disk"""
+    def save_model(self, model, model_type, strategy='macd_crossover'):
+        """Save trained model and scaler to disk with strategy name"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        model_path = MODELS_DIR / f"model_{model_type}_{timestamp}.pkl"
-        scaler_path = MODELS_DIR / f"scaler_{timestamp}.pkl"
-        features_path = MODELS_DIR / f"features_{timestamp}.pkl"
+        model_path = MODELS_DIR / f"model_{strategy}_{model_type}_{timestamp}.pkl"
+        scaler_path = MODELS_DIR / f"scaler_{strategy}_{timestamp}.pkl"
+        features_path = MODELS_DIR / f"features_{strategy}_{timestamp}.pkl"
         
         try:
             joblib.dump(model, model_path)
@@ -217,14 +222,14 @@ class MLTrainer:
             logger.error(f"Failed to load model: {e}")
             return None, None, None
     
-    def train(self):
-        """Main training pipeline"""
+    def train(self, strategy='macd_crossover'):
+        """Main training pipeline for a specific strategy"""
         logger.info("\n" + "="*60)
-        logger.info("STARTING MODEL TRAINING PIPELINE")
+        logger.info(f"STARTING MODEL TRAINING: {strategy}")
         logger.info("="*60)
         
-        # Load data
-        df = self.get_training_data()
+        # Load strategy-specific data
+        df = self.get_training_data(strategy=strategy)
         if df is None or len(df) < MIN_TRAINING_SAMPLES:
             logger.error(f"Insufficient training data (need {MIN_TRAINING_SAMPLES}, got {len(df) if df is not None else 0})")
             return False
@@ -260,11 +265,11 @@ class MLTrainer:
         # Evaluate
         self.evaluate_model(model, X_train_scaled, X_test_scaled, y_train, y_test)
         
-        # Save
-        self.save_model(model, ML_MODEL_TYPE)
+        # Save with strategy name
+        self.save_model(model, model_type=ML_MODEL_TYPE, strategy=strategy)
         
         logger.info("\n" + "="*60)
-        logger.info("TRAINING COMPLETE")
+        logger.info(f"TRAINING COMPLETE FOR {strategy}")
         logger.info("="*60)
         
         return True
@@ -272,7 +277,26 @@ class MLTrainer:
 
 if __name__ == "__main__":
     trainer = MLTrainer()
-    success = trainer.train()
+    
+    # Train models for all strategies
+    strategies = ['macd_crossover', 'scalping']  # Add more as implemented
+    
+    logger.info("\n" + "="*60)
+    logger.info("STARTING MULTI-STRATEGY MODEL TRAINING")
+    logger.info("="*60 + "\n")
+    
+    results = {}
+    for strategy in strategies:
+        logger.info(f"Training model for: {strategy}")
+        success = trainer.train(strategy=strategy)
+        results[strategy] = 'SUCCESS' if success else 'FAILED'
+    
+    logger.info("\n" + "="*60)
+    logger.info("TRAINING SUMMARY")
+    logger.info("="*60)
+    for strategy, status in results.items():
+        logger.info(f"  {strategy}: {status}")
+    logger.info("="*60)
     
     if success:
         logger.info("\n✓ Model training succeeded!")

@@ -78,6 +78,13 @@ PROFIT_THRESHOLD  = 0.001         # 0.1%
 MODELS_DIR        = Path(__file__).parent / "models"
 MODELS_DIR.mkdir(exist_ok=True)
 
+LOGS_DIR          = Path(__file__).parent / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
+
+TRADES_LOG_FILE   = LOGS_DIR / "trades.csv"  # Daily updated
+STRATEGY_LOGS_DIR = LOGS_DIR / "strategies"
+STRATEGY_LOGS_DIR.mkdir(exist_ok=True)
+
 # Model configuration
 ML_MODEL_TYPE     = "random_forest"  # or "gradient_boosting"
 MIN_TRAINING_SAMPLES = 500
@@ -89,6 +96,47 @@ MAX_POSITION_SIZE = 5               # Max shares per position
 MAX_OPEN_POSITIONS = 10             # Max concurrent positions
 STOP_LOSS_PCT     = 0.02            # 2% stop loss
 TAKE_PROFIT_PCT   = 0.04            # 4% take profit
+
+# ─────────────────────────────────────────────────
+#  Trading Strategies
+# ─────────────────────────────────────────────────
+STRATEGIES = {
+    'macd_crossover': {
+        'name': 'MACD Crossover',
+        'description': 'Swing trading using MACD signals',
+        'lookback_bars': 20,
+        'min_confidence': 0.65,
+        'risk_per_trade': 0.02,
+        'enabled': True
+    },
+    'scalping': {
+        'name': 'Scalping',
+        'description': 'Quick trades capturing small moves (1-5 min)',
+        'lookback_bars': 5,
+        'min_confidence': 0.70,
+        'risk_per_trade': 0.01,
+        'enabled': True
+    },
+    'options_scalping': {
+        'name': 'Options Scalping',
+        'description': 'Scalping options contracts (EXPERIMENTAL)',
+        'lookback_bars': 5,
+        'min_confidence': 0.75,
+        'risk_per_trade': 0.015,
+        'enabled': False  # Not yet implemented
+    },
+    'five_pillars': {
+        'name': 'Five Pillars',
+        'description': 'Multi-factor analysis strategy (EXPERIMENTAL)',
+        'lookback_bars': 50,
+        'min_confidence': 0.75,
+        'risk_per_trade': 0.02,
+        'enabled': False  # Not yet implemented
+    }
+}
+
+# Active strategy (can be switched)
+ACTIVE_STRATEGY = 'macd_crossover'
 
 # Market hours (US/Eastern)
 MARKET_OPEN_HOUR   = 9              # 9:30 AM
