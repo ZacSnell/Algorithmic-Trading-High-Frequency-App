@@ -92,10 +92,13 @@ MIN_CONFIDENCE    = 0.65            # Minimum prediction confidence to trade
 TRAIN_TEST_SPLIT  = 0.2
 
 # Risk management
-MAX_POSITION_SIZE = 5               # Max shares per position
+POSITION_SIZE_PCT = 50              # % of buying power to use per position (25/50/75/100 presets or custom)
 MAX_OPEN_POSITIONS = 10             # Max concurrent positions
 STOP_LOSS_PCT     = 0.02            # 2% stop loss
 TAKE_PROFIT_PCT   = 0.04            # 4% take profit
+
+# Position sizing presets (as percentages of buying power)
+POSITION_SIZE_PRESETS = [25, 50, 75, 100]  # Default presets for UI selector
 
 # ─────────────────────────────────────────────────
 #  Trading Strategies

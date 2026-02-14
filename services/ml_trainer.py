@@ -199,22 +199,50 @@ class MLTrainer:
             logger.error(f"Failed to save model: {e}")
             return None
     
-    def load_latest_model(self, model_type):
-        """Load the most recent trained model"""
-        model_files = sorted(MODELS_DIR.glob(f"model_{model_type}_*.pkl"), reverse=True)
+    def load_latest_model(self, model_type, strategy='macd_crossover'):
+        """Load the most recent trained model for a specific strategy"""
+        # Look for strategy-specific model files
+        model_files = sorted(
+            MODELS_DIR.glob(f"model_{strategy}_{model_type}_*.pkl"), 
+            reverse=True
+        )
         
         if not model_files:
-            logger.warning(f"No saved models found for {model_type}")
+            # Fall back to generic model files
+            model_files = sorted(
+                MODELS_DIR.glob(f"model_{model_type}_*.pkl"), 
+                reverse=True
+            )
+        
+        if not model_files:
+            logger.warning(f"No saved models found for {strategy} ({model_type})")
             return None, None, None
         
         try:
             latest_model = model_files[0]
             model = joblib.load(latest_model)
             
-            # Load corresponding scaler and features
-            timestamp = latest_model.stem.split('_')[-1]
-            scaler = joblib.load(MODELS_DIR / f"scaler_{timestamp}.pkl")
-            features = joblib.load(MODELS_DIR / f"features_{timestamp}.pkl")
+            # Extract timestamp from filename
+            # Format: model_macd_crossover_random_forest_20260214_114118.pkl
+            # We need the last two parts: 20260214_114118
+            parts = latest_model.stem.split('_')
+            timestamp = '_'.join(parts[-2:])  # Get last two parts as timestamp
+            
+            # Try strategy-specific scaler/features first
+            scaler_file = MODELS_DIR / f"scaler_{strategy}_{timestamp}.pkl"
+            features_file = MODELS_DIR / f"features_{strategy}_{timestamp}.pkl"
+            
+            if not scaler_file.exists():
+                scaler_file = MODELS_DIR / f"scaler_{timestamp}.pkl"
+            if not features_file.exists():
+                features_file = MODELS_DIR / f"features_{timestamp}.pkl"
+            
+            if not scaler_file.exists() or not features_file.exists():
+                logger.error(f"Missing scaler or features files for timestamp {timestamp}")
+                return None, None, None
+            
+            scaler = joblib.load(scaler_file)
+            features = joblib.load(features_file)
             
             logger.info(f"Loaded model: {latest_model}")
             return model, scaler, features

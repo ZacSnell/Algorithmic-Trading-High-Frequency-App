@@ -92,7 +92,7 @@ class LiveTrader:
             logger.error(f"Failed to get account info: {e}")
             return None
     
-    def can_open_position(self, symbol, max_position_size=MAX_POSITION_SIZE):
+    def can_open_position(self, symbol):
         """Check if we can open a new position"""
         positions = self.get_open_positions()
         
@@ -108,9 +108,8 @@ class LiveTrader:
         if not account:
             return False, "Could not get account info"
         
-        # Enough buying power
-        required_capital = max_position_size * 100  # Rough estimate
-        if account['buying_power'] < required_capital:
+        # Enough buying power (minimum $100 for any position)
+        if account['buying_power'] < 100:
             return False, f"Insufficient buying power (${account['buying_power']:.2f})"
         
         return True, "Ready to trade"
@@ -176,16 +175,17 @@ class LiveTrader:
                     logger.info(f"Cannot trade {symbol}: {reason}")
                     continue
                 
-                # Calculate position size (risk-based)
+                # Calculate position size based on percentage of buying power
                 account = self.get_account_info()
-                risk_amount = account['equity'] * 0.01  # Risk 1% per trade
-                qty = int(risk_amount / price)
+                buying_power = account['buying_power']
+                
+                # Position value = buying_power * percentage / 100
+                position_value = buying_power * (POSITION_SIZE_PCT / 100.0)
+                qty = int(position_value / price)
                 
                 if qty < 1:
-                    logger.warning(f"Position size too small for {symbol}")
+                    logger.warning(f"Position size too small for {symbol} (BP: ${buying_power:.2f}, Size: {POSITION_SIZE_PCT}%)")
                     continue
-                
-                qty = min(qty, MAX_POSITION_SIZE)
                 
                 # Submit order
                 order = self.submit_order(symbol, qty, "buy")

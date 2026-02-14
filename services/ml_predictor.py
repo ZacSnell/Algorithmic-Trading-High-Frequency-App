@@ -14,31 +14,36 @@ class MLPredictor:
     """
     Uses trained models to make real-time predictions on new market data.
     Stores confidence scores and prediction history.
+    Supports multiple trading strategies.
     """
     
-    def __init__(self):
+    def __init__(self, strategy='macd_crossover'):
+        self.strategy = strategy
         self.model = None
         self.scaler = None
         self.feature_columns = None
         self.trainer = MLTrainer()
         self.prediction_history = {}  # Store recent predictions
         
-        # Load latest trained model
+        # Load latest trained model for this strategy
         self._load_model()
     
     def _load_model(self):
-        """Load the most recent trained model"""
-        model, scaler, features = self.trainer.load_latest_model(ML_MODEL_TYPE)
+        """Load the most recent trained model for the strategy"""
+        model, scaler, features = self.trainer.load_latest_model(
+            ML_MODEL_TYPE, 
+            strategy=self.strategy
+        )
         
         if model is None:
-            logger.warning("No trained model found. Run ml_trainer.py first!")
+            logger.warning(f"No trained model found for {self.strategy}. Run ml_trainer.py first!")
             self.model = None
             return False
         
         self.model = model
         self.scaler = scaler
         self.feature_columns = features
-        logger.info("Model loaded and ready for predictions")
+        logger.info(f"Model loaded for {self.strategy} and ready for predictions")
         return True
     
     def is_model_ready(self):

@@ -505,9 +505,12 @@ class TradingGUI(QMainWindow):
         
         # Load trades for the day
         if strategy_filter:
-            trades = self.trade_logger.get_strategy_daily_trades(strategy_filter, date_str)
+            daily_data = self.trade_logger.get_strategy_daily_trades(strategy_filter, date_str)
         else:
-            trades = self.trade_logger.get_daily_trades(date_str)
+            daily_data = self.trade_logger.get_daily_trades(date_str)
+        
+        # Extract the trades list from the returned dict
+        trades = daily_data.get('trades', [])
         
         # Update statistics
         if trades:
@@ -620,11 +623,13 @@ class TradingGUI(QMainWindow):
         self.take_profit_spin.setSingleStep(0.01)
         risk_layout.addWidget(self.take_profit_spin, 1, 1)
         
-        risk_layout.addWidget(QLabel("Max Position Size:"), 2, 0)
-        self.max_position_spin = QSpinBox()
-        self.max_position_spin.setRange(1, 100)
-        self.max_position_spin.setValue(MAX_POSITION_SIZE)
-        risk_layout.addWidget(self.max_position_spin, 2, 1)
+        risk_layout.addWidget(QLabel("Position Size (%):"), 2, 0)
+        self.position_size_spin = QSpinBox()
+        self.position_size_spin.setRange(10, 100)
+        self.position_size_spin.setValue(POSITION_SIZE_PCT)
+        self.position_size_spin.setSuffix("%")
+        self.position_size_spin.setToolTip(f"Percentage of buying power to use per position\nPresets: {POSITION_SIZE_PRESETS}")
+        risk_layout.addWidget(self.position_size_spin, 2, 1)
         
         risk_layout.addWidget(QLabel("Max Open Positions:"), 3, 0)
         self.max_positions_spin = QSpinBox()
