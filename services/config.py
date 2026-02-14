@@ -30,9 +30,13 @@ from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 
 # ML imports (expand later as needed)
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, roc_auc_score, precision_score, recall_score
+from sklearn.preprocessing import StandardScaler
+import joblib
+import schedule
+import threading
 
 # Logging
 import logging
@@ -67,6 +71,34 @@ DAYS_BACK         = 30
 INTERVAL          = "1m"          # 1 minute bars
 LOOKAHEAD_BARS    = 5
 PROFIT_THRESHOLD  = 0.001         # 0.1%
+
+# ─────────────────────────────────────────────────
+#  ML / Trading Strategy Configuration
+# ─────────────────────────────────────────────────
+MODELS_DIR        = Path(__file__).parent / "models"
+MODELS_DIR.mkdir(exist_ok=True)
+
+# Model configuration
+ML_MODEL_TYPE     = "random_forest"  # or "gradient_boosting"
+MIN_TRAINING_SAMPLES = 500
+MIN_CONFIDENCE    = 0.65            # Minimum prediction confidence to trade
+TRAIN_TEST_SPLIT  = 0.2
+
+# Risk management
+MAX_POSITION_SIZE = 5               # Max shares per position
+MAX_OPEN_POSITIONS = 10             # Max concurrent positions
+STOP_LOSS_PCT     = 0.02            # 2% stop loss
+TAKE_PROFIT_PCT   = 0.04            # 4% take profit
+
+# Market hours (US/Eastern)
+MARKET_OPEN_HOUR   = 9              # 9:30 AM
+MARKET_OPEN_MIN    = 30
+MARKET_CLOSE_HOUR  = 16             # 4:00 PM
+MARKET_CLOSE_MIN   = 0
+
+# Training schedule (when market is closed)
+TRAIN_TIME         = "20:00"        # 8 PM ET - after market close
+REBALANCE_TIME     = "04:00"        # 4 AM ET - before market open
 
 # Shared clients (created once here)
 trade_client = TradingClient(API_KEY, API_SECRET, paper=PAPER_MODE)
