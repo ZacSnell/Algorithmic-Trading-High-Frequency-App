@@ -978,8 +978,37 @@ class TradingGUI(QMainWindow):
             )
     
     def save_settings(self):
-        """Save settings"""
-        QMessageBox.information(self, "Settings", "Settings saved successfully")
+        """Save settings to .env file for persistence"""
+        try:
+            # Gather all settings from UI
+            settings = {
+                'position_size_pct': self.position_size_spin.value(),
+                'stop_loss_pct': self.stop_loss_spin.value(),
+                'take_profit_pct': self.take_profit_spin.value(),
+                'max_open_positions': self.max_positions_spin.value(),
+                'ml_model_type': self.model_type_combo.currentText(),
+            }
+            
+            # Save to .env file
+            from config import save_settings_to_env
+            if save_settings_to_env(settings):
+                QMessageBox.information(
+                    self, 
+                    "Settings Saved", 
+                    f"Settings saved successfully:\n"
+                    f"• Position Size: {settings['position_size_pct']}%\n"
+                    f"• Stop Loss: {settings['stop_loss_pct']}\n"
+                    f"• Take Profit: {settings['take_profit_pct']}\n"
+                    f"• Max Positions: {settings['max_open_positions']}\n"
+                    f"• Model Type: {settings['ml_model_type']}\n\n"
+                    f"Changes will persist across app restarts."
+                )
+            else:
+                QMessageBox.warning(self, "Error", "Failed to save settings to .env file")
+        
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error saving settings: {str(e)}")
+
     
     def clear_logs(self):
         """Clear logs"""

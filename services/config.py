@@ -112,16 +112,31 @@ STRATEGY_LOGS_DIR = LOGS_DIR / "strategies"
 STRATEGY_LOGS_DIR.mkdir(exist_ok=True)
 
 # Model configuration
-ML_MODEL_TYPE     = "random_forest"  # or "gradient_boosting"
+ML_MODEL_TYPE     = os.getenv("ML_MODEL_TYPE", "random_forest")  # or "gradient_boosting"
 MIN_TRAINING_SAMPLES = 500
 MIN_CONFIDENCE    = 0.65            # Minimum prediction confidence to trade
 TRAIN_TEST_SPLIT  = 0.2
 
-# Risk management
-POSITION_SIZE_PCT = 50              # % of buying power to use per position (25/50/75/100 presets or custom)
-MAX_OPEN_POSITIONS = 10             # Max concurrent positions
-STOP_LOSS_PCT     = 0.02            # 2% stop loss
-TAKE_PROFIT_PCT   = 0.04            # 4% take profit
+# Risk management - Load from .env if present, otherwise use defaults
+try:
+    POSITION_SIZE_PCT = int(os.getenv("POSITION_SIZE_PCT", 50))
+except ValueError:
+    POSITION_SIZE_PCT = 50
+
+try:
+    MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", 10))
+except ValueError:
+    MAX_OPEN_POSITIONS = 10
+
+try:
+    STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", 0.02))
+except ValueError:
+    STOP_LOSS_PCT = 0.02
+
+try:
+    TAKE_PROFIT_PCT = float(os.getenv("TAKE_PROFIT_PCT", 0.04))
+except ValueError:
+    TAKE_PROFIT_PCT = 0.04
 
 # Position sizing presets (as percentages of buying power)
 POSITION_SIZE_PRESETS = [25, 50, 75, 100]  # Default presets for UI selector
@@ -189,5 +204,70 @@ def get_date_range(days_back=DAYS_BACK):
     end   = now_eastern()
     start = end - timedelta(days=days_back * 1.5)  # buffer for weekends/holidays
     return start, end
+
+def save_settings_to_env(settings_dict):
+    """
+    Save trading settings to .env file for persistence across restarts.
+    
+    Args:
+        settings_dict: Dictionary of settings to save
+            - position_size_pct: percentage of buying power to use per position
+            - stop_loss_pct: stop loss percentage
+            - take_profit_pct: take profit percentage
+            - max_open_positions: max concurrent positions
+            - ml_model_type: "random_forest" or "gradient_boosting"
+            - strategy_min_confidence: minimum confidence for current strategy
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    global env_path, POSITION_SIZE_PCT, STOP_LOSS_PCT, TAKE_PROFIT_PCT, MAX_OPEN_POSITIONS, ML_MODEL_TYPE
+    
+    if not env_path or not env_path.exists():
+        logger.error("Cannot save settings: .env file not found")
+        return False
+    
+    try:
+        # Read current .env file
+        env_vars = {}
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    env_vars[key.strip()] = value.strip()
+        
+        # Update with new settings
+        if 'position_size_pct' in settings_dict:
+            env_vars['POSITION_SIZE_PCT'] = str(settings_dict['position_size_pct'])
+            POSITION_SIZE_PCT = settings_dict['position_size_pct']
+        
+        if 'stop_loss_pct' in settings_dict:
+            env_vars['STOP_LOSS_PCT'] = str(settings_dict['stop_loss_pct'])
+            STOP_LOSS_PCT = settings_dict['stop_loss_pct']
+        
+        if 'take_profit_pct' in settings_dict:
+            env_vars['TAKE_PROFIT_PCT'] = str(settings_dict['take_profit_pct'])
+            TAKE_PROFIT_PCT = settings_dict['take_profit_pct']
+        
+        if 'max_open_positions' in settings_dict:
+            env_vars['MAX_OPEN_POSITIONS'] = str(settings_dict['max_open_positions'])
+            MAX_OPEN_POSITIONS = settings_dict['max_open_positions']
+        
+        if 'ml_model_type' in settings_dict:
+            env_vars['ML_MODEL_TYPE'] = settings_dict['ml_model_type']
+            ML_MODEL_TYPE = settings_dict['ml_model_type']
+        
+        # Write back to .env file
+        with open(env_path, 'w') as f:
+            for key, value in env_vars.items():
+                f.write(f"{key}={value}\n")
+        
+        logger.info(f"Settings saved to {env_path}")
+        return True
+    
+    except Exception as e:
+        logger.error(f"Error saving settings: {e}")
+        return False
 
 logger.info("config.py loaded successfully")
