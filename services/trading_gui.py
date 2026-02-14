@@ -107,9 +107,16 @@ class TradingGUI(QMainWindow):
         # Check for trained models for each strategy
         for strategy in STRATEGIES.keys():
             if STRATEGIES[strategy]['enabled']:
-                predictor = MLPredictor(strategy=strategy)
-                self.predictors[strategy] = predictor
-                self.model_status[strategy] = predictor.is_model_ready()
+                try:
+                    predictor = MLPredictor(strategy=strategy)
+                    self.predictors[strategy] = predictor
+                    self.model_status[strategy] = predictor.is_model_ready()
+                    if not self.model_status[strategy]:
+                        logger.warning(f"Model not ready for {strategy}")
+                except Exception as e:
+                    logger.error(f"Error initializing predictor for {strategy}: {e}")
+                    self.predictors[strategy] = None
+                    self.model_status[strategy] = False
         
         # Initialize UI
         self.setup_ui()
@@ -838,17 +845,33 @@ class TradingGUI(QMainWindow):
         # Update recent trades table
         self.refresh_trades()
         
-        # Update account info
+        # Update account info (fetch regardless of trading status)
         try:
+            account = None
+            # Try to get from active trader if trading
             if self.is_trading and self.trading_worker and self.trading_worker.trader:
                 account = self.trading_worker.trader.get_account_info()
-                if account:
-                    self.account_labels['buying_power'].setText(f"${account['buying_power']:,.2f}")
-                    self.account_labels['cash'].setText(f"${account['cash']:,.2f}")
-                    self.account_labels['equity'].setText(f"${account['equity']:,.2f}")
-                    self.account_labels['portfolio_value'].setText(f"${account['portfolio_value']:,.2f}")
-        except:
-            pass
+            else:
+                # Fall back to direct API call using trade_client from config
+                try:
+                    from config import trade_client
+                    alpaca_account = trade_client.get_account()
+                    account = {
+                        'buying_power': float(alpaca_account.buying_power or 0),
+                        'cash': float(alpaca_account.cash or 0),
+                        'equity': float(alpaca_account.equity or 0),
+                        'portfolio_value': float(alpaca_account.portfolio_value or 0)
+                    }
+                except:
+                    account = None
+            
+            if account:
+                self.account_labels['buying_power'].setText(f"${account['buying_power']:,.2f}")
+                self.account_labels['cash'].setText(f"${account['cash']:,.2f}")
+                self.account_labels['equity'].setText(f"${account['equity']:,.2f}")
+                self.account_labels['portfolio_value'].setText(f"${account['portfolio_value']:,.2f}")
+        except Exception as e:
+            logger.error(f"Error fetching account info: {e}")
     
     def update_dashboard(self):
         """Update dashboard data"""

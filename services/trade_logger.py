@@ -350,6 +350,41 @@ class TradeLogger:
         except Exception as e:
             logger.error(f"Error exporting CSV: {e}")
             return None
+    
+    def export_daily_trades_to_csv(self, date_str):
+        """Export trades from a specific day to CSV file"""
+        import csv
+        
+        try:
+            # Parse date string if needed
+            if isinstance(date_str, str):
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            else:
+                date_obj = date_str
+            
+            # Get trades for that specific day
+            trades = self.get_daily_trades(date_obj)
+            
+            if not trades:
+                logger.warning(f"No trades found for {date_obj}")
+                return None
+            
+            # Create CSV filename
+            csv_filename = f"trades_{date_obj.strftime('%Y-%m-%d')}.csv"
+            csv_path = self.logs_dir / csv_filename
+            
+            # Write to CSV
+            with open(csv_path, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=trades[0].keys())
+                writer.writeheader()
+                writer.writerows(trades)
+            
+            logger.info(f"Exported {len(trades)} trades for {date_obj} to {csv_path}")
+            return str(csv_path)
+        
+        except Exception as e:
+            logger.error(f"Error exporting daily trades: {e}")
+            return None
 
 
 # Global instance
