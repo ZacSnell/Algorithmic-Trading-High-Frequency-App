@@ -41,11 +41,72 @@ def generate_synthetic_data(symbol, num_days=60, strategy='macd_crossover'):
     return df.sort_index()
 
 def get_most_active_symbols_with_price_filter():
-    """Return list of symbols for training (using synthetic data)"""
-    # Since we're using synthetic data, we don't need to filter
-    symbols = ["AAPL", "MSFT", "GOOGL", "TSLA", "AMZN", "META", "NVDA", "AMD", "PLTR", "XOM"]
-    logger.info(f"Using {len(symbols)} symbols for synthetic data generation")
-    return symbols
+    """
+    Dynamically fetch today's most active/trending stocks
+    Falls back to multiple methods if one fails
+    """
+    logger.info("Discovering today's most active stocks...")
+    
+    symbols = []
+    
+    # Method 1: Try Alpaca's screener API
+    try:
+        logger.info("Attempting to fetch from Alpaca screener...")
+        url = "https://data.alpaca.markets/v1beta1/screener/stocks/most-actives?top=20&by=volume"
+        response = data_client._request("GET", url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            candidates = data.get('most_actives', [])
+            symbols = [item['symbol'] for item in candidates[:20]]
+            logger.info(f"✓ Alpaca screener: Found {len(symbols)} stocks")
+            return symbols
+    except Exception as e:
+        logger.warning(f"Alpaca screener failed: {e}")
+    
+    # Method 2: Try yfinance to get today's top gainers
+    try:
+        logger.info("Attempting yfinance top gainers...")
+        import yfinance as yf
+        
+        # This attempts to fetch trending data
+        gainers = pd.read_html('https://finance.yahoo.com/gainers')[0]
+        symbols = gainers['Symbol'].head(15).tolist()
+        
+        # Filter out bad symbols
+        symbols = [s for s in symbols if len(s) <= 5 and s.isalpha()]
+        logger.info(f"✓ Yahoo Finance: Found {len(symbols)} gainers")
+        return symbols[:20]
+    except Exception as e:
+        logger.warning(f"yfinance gainers failed: {e}")
+    
+    # Method 3: Fetch high-volume stocks from yfinance
+    try:
+        logger.info("Attempting high-volume stocks lookup...")
+        import yfinance as yf
+        
+        high_volume = pd.read_html('https://finance.yahoo.com/most-active')[0]
+        symbols = high_volume['Symbol'].head(15).tolist()
+        
+        # Filter out bad symbols
+        symbols = [s for s in symbols if len(s) <= 5 and s.isalpha()]
+        logger.info(f"✓ High-volume stocks: Found {len(symbols)}")
+        return symbols[:20]
+    except Exception as e:
+        logger.warning(f"High-volume lookup failed: {e}")
+    
+    # Method 4: Use predefined list of liquid stocks (fallback)
+    logger.warning("All dynamic discovery methods failed, using fallback stock list")
+    fallback = [
+        "SPY", "QQQ", "IWM",  # ETFs
+        "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN",  # Mega cap tech
+        "TSLA", "META", "PLTR", "AMD",  # Growth stocks
+        "JPM", "BAC", "WFC",  # Banks
+        "XOM", "CVX"  # Energy
+    ]
+    
+    logger.info(f"Using fallback: {len(fallback)} stocks")
+    return fallback
 
 def get_date_range():
     """Get start and end dates for data fetch"""
@@ -111,36 +172,70 @@ def add_features_and_target(df):
 
 if __name__ == "__main__":
     logger.info("Starting dataset build for all strategies...")
+    import json
+    
+    # Discover dynamic symbols - not hardcoded!
     symbols = get_most_active_symbols_with_price_filter()
+    logger.info(f"Discovered {len(symbols)} active symbols for training: {', '.join(symbols)}")
     
     # Generate data for each strategy
     strategies = ['macd_crossover', 'scalping']  # Add more as implemented
     
+    # Track training info for this run
+    training_date = datetime.now(tz=TIMEZONE).strftime('%Y-%m-%d')
+    training_info = {
+        'date': training_date,
+        'timestamp': datetime.now(tz=TIMEZONE).isoformat(),
+        'strategies': {},
+        'discovered_symbols': symbols,
+        'num_symbols': len(symbols)
+    }
+    
     for strategy in strategies:
         logger.info(f"\n{'='*50}")
         logger.info(f"Building dataset for strategy: {strategy}")
+        logger.info(f"Discovered symbols: {', '.join(symbols)}")
         logger.info(f"{'='*50}")
         
         all_data = {}
+        strategy_info = {
+            'symbols_used': [],
+            'total_samples': 0,
+            'files_created': []
+        }
         
         for sym in symbols:
-            logger.info(f"Processing {sym} ({strategy})")
+            logger.info(f"Generating data for {sym} ({strategy})...")
             df = download_intraday(sym, strategy=strategy)
             if df is not None:
                 df = add_features_and_target(df)
                 all_data[sym] = df
                 filename = f"{sym}_{strategy}_labeled.csv"
                 df.to_csv(filename)
-                logger.info(f"Saved {len(df):,} rows to {filename}")
+                logger.info(f"  ✓ Saved {len(df):,} rows to {filename}")
+                strategy_info['symbols_used'].append(sym)
+                strategy_info['files_created'].append(filename)
         
         if all_data:
             combined = pd.concat(all_data.values(), keys=all_data.keys(), names=['Symbol'])
             combined_filename = f"combined_{strategy}_dataset.csv"
             combined.to_csv(combined_filename)
-            logger.info(f"Combined {strategy} dataset saved: {len(combined):,} rows to {combined_filename}")
+            strategy_info['total_samples'] = len(combined)
+            strategy_info['combined_file'] = combined_filename
+            logger.info(f"✓ Combined {strategy} dataset: {len(combined):,} rows in {combined_filename}")
         else:
-            logger.warning(f"No data collected for {strategy}")
+            logger.warning(f"✗ No data collected for {strategy}")
+        
+        training_info['strategies'][strategy] = strategy_info
+    
+    # Save training metadata
+    training_info_file = f"training_info_{training_date}.json"
+    with open(training_info_file, 'w') as f:
+        json.dump(training_info, f, indent=2)
+    logger.info(f"\n✓ Training metadata saved to {training_info_file}")
     
     logger.info(f"\n{'='*50}")
     logger.info("Dataset build complete for all strategies!")
+    logger.info(f"  Discovered and trained on: {', '.join(symbols)}")
+    logger.info(f"  Training info saved: {training_info_file}")
     logger.info(f"{'='*50}")

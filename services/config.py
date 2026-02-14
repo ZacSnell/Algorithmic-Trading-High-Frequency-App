@@ -21,7 +21,7 @@ try:
     TALIB_AVAILABLE = True
 except ImportError:
     TALIB_AVAILABLE = False
-    print("TA-Lib not found → using pandas EMA fallback for MACD")
+    print("TA-Lib not found - using pandas EMA fallback for MACD")
 
 # Alpaca imports (modern alpaca-py)
 from alpaca.trading.client import TradingClient
