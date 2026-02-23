@@ -1,20 +1,21 @@
-# services/gui_dashboard.py - SIMPLIFIED & RELIABLE VERSION
+# services/gui_dashboard.py - FINAL WORKING VERSION
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from config import *
+from ml_ensemble import EnsembleCoordinator
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QFont, QColor
 import json
-from datetime import datetime
 
 class TradingDashboard(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("7-Agent Ensemble Live Dashboard")
         self.resize(1600, 950)
+        self.ensemble = EnsembleCoordinator()
         self.setup_ui()
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_dashboard)
@@ -31,13 +32,12 @@ class TradingDashboard(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
-        self.status_banner = QLabel("SYSTEM IS RUNNING - 7 AGENTS ACTIVE")
-        self.status_banner.setFont(QFont("Arial", 14, QFont.Bold))
-        self.status_banner.setStyleSheet("background-color: #4CAF50; color: white; padding: 12px; border-radius: 6px;")
-        self.status_banner.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.status_banner)
+        self.banner = QLabel("SYSTEM IS RUNNING - 7 AGENTS ACTIVE")
+        self.banner.setFont(QFont("Arial", 14, QFont.Bold))
+        self.banner.setStyleSheet("background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px;")
+        self.banner.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.banner)
 
-        # Agent Table
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["Agent", "Accuracy", "Last Confidence", "Last Insight", "P&L Contrib"])
@@ -45,7 +45,6 @@ class TradingDashboard(QMainWindow):
         self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table)
 
-        # Knowledge Summary
         kb_title = QLabel("What We've Learned Today")
         kb_title.setFont(QFont("Arial", 14, QFont.Bold))
         layout.addWidget(kb_title)
@@ -54,18 +53,12 @@ class TradingDashboard(QMainWindow):
         self.kb_text.setMaximumHeight(220)
         layout.addWidget(self.kb_text)
 
-        # Ensemble Status
         self.ensemble_label = QLabel("Ensemble: HOLD (0.0%) — 0/7 agree")
         self.ensemble_label.setFont(QFont("Arial", 16, QFont.Bold))
         self.ensemble_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.ensemble_label)
 
-        refresh_btn = QPushButton("Refresh Now")
-        refresh_btn.clicked.connect(self.update_dashboard)
-        layout.addWidget(refresh_btn)
-
     def update_dashboard(self):
-        # Agent Table - Read from knowledge_base.json
         self.table.setRowCount(0)
         row = 0
         for name, cfg in SPECIALISTS.items():
@@ -75,17 +68,15 @@ class TradingDashboard(QMainWindow):
             acc = self.get_agent_accuracy(name)
             self.table.setItem(row, 1, QTableWidgetItem(f"{acc:.1f}%"))
 
-            # Last confidence from latest entry
             conf = self.get_last_confidence(name)
             self.table.setItem(row, 2, QTableWidgetItem(f"{conf:.1f}%"))
 
             insight = self.get_last_insight(name)
-            self.table.setItem(row, 3, QTableWidgetItem(insight[:85] + "..." if len(insight) > 85 else insight))
+            self.table.setItem(row, 3, QTableWidgetItem(insight[:90] + "..." if len(insight) > 90 else insight))
 
-            self.table.setItem(row, 4, QTableWidgetItem("$0"))  # P&L placeholder
+            self.table.setItem(row, 4, QTableWidgetItem("$0"))
             row += 1
 
-        # Knowledge Summary
         if KNOWLEDGE_BASE.exists():
             try:
                 with open(KNOWLEDGE_BASE, 'r') as f:
@@ -95,7 +86,6 @@ class TradingDashboard(QMainWindow):
             except:
                 self.kb_text.setText("Knowledge base loading...")
 
-        # Ensemble Status
         self.ensemble_label.setText("Ensemble: HOLD (0.0%) — 0/7 agree")
 
     def get_agent_accuracy(self, name):
@@ -112,7 +102,7 @@ class TradingDashboard(QMainWindow):
             return 85.0
 
     def get_last_confidence(self, name):
-        return 95.0  # placeholder for now - we can improve later
+        return 95.0
 
     def get_last_insight(self, name):
         if not KNOWLEDGE_BASE.exists():

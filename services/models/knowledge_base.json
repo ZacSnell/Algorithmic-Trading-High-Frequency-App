@@ -504,5 +504,60 @@
     "hot_stocks": {
       "SPY": 0.0
     }
+  },
+  {
+    "date": "2026-02-23T01:59:50.643789-05:00",
+    "specialist": "momentum",
+    "top_features": {
+      "MACD_Hist": 0.8033809134504821,
+      "MACD": 0.19661908654951787,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9343712719530058,
+    "insight": "Strongest signal: MACD_Hist"
+  },
+  {
+    "date": "2026-02-23T02:00:44.889258-05:00",
+    "specialist": "reversion",
+    "top_features": {
+      "ZScore": 1.0,
+      "Bollinger_Width": 0.0,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9960284501895169,
+    "insight": "Strongest signal: ZScore"
+  },
+  {
+    "date": "2026-02-23T02:01:48.062258-05:00",
+    "specialist": "volume",
+    "top_features": {
+      "OBV": 0.36718194868639376,
+      "Volume": 0.32659183453433865,
+      "Volume_SMA_Ratio": 0.30622621677926753
+    },
+    "test_accuracy": 0.9398076138989142,
+    "insight": "Strongest signal: OBV"
+  },
+  {
+    "date": "2026-02-23T02:02:52.401658-05:00",
+    "specialist": "volatility",
+    "top_features": {
+      "Volatility_Ratio": 0.9309000153272204,
+      "ATR": 0.06909998467277953,
+      "Bollinger_Width": 0.0
+    },
+    "test_accuracy": 0.9960284501895169,
+    "insight": "Strongest signal: Volatility_Ratio"
+  },
+  {
+    "date": "2026-02-23T02:03:44.113397-05:00",
+    "specialist": "breakout",
+    "top_features": {
+      "Volume": 0.41124691185498047,
+      "Close_vs_High": 0.337877820532365,
+      "High_Low_Range": 0.2508752676126546
+    },
+    "test_accuracy": 0.939701907249966,
+    "insight": "Strongest signal: Volume"
   }
 ]

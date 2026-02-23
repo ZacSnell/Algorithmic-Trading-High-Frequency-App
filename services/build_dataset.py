@@ -1,10 +1,9 @@
-# build_dataset.py - COMPLETE & FIXED VERSION
+# build_dataset.py - REAL HISTORICAL DATA (FINAL)
 from config import *
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
 from datetime import datetime, timedelta
 import numpy as np
-import json
 
 def download_intraday(symbol, strategy='macd_crossover'):
     """Fetch REAL 1-minute bars from Alpaca (last 30 days)"""
@@ -40,14 +39,13 @@ def download_intraday(symbol, strategy='macd_crossover'):
 
 def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
     """Synthetic fallback with DST fix"""
-    logger.info(f"Generating synthetic fallback for {symbol} ({num_days} bars)")
+    logger.info(f"Generating synthetic fallback for {symbol}")
     np.random.seed(hash(symbol + strategy) % 2**32)
     initial_price = np.random.uniform(5, 100)
     params = {'drift': 0.0005, 'volatility': 0.018}
     returns = np.random.normal(params['drift'], params['volatility'], num_days)
     prices = initial_price * np.exp(np.cumsum(returns))
 
-    # FIXED DST handling
     dates = pd.date_range(end=datetime.now(), periods=num_days, freq='D')
     dates = dates.tz_localize(TIMEZONE, ambiguous='infer', nonexistent='shift_forward')
 
@@ -64,14 +62,13 @@ def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
     return df.sort_index()
 
 def get_most_active_symbols_with_price_filter():
-    """Fallback list (Alpaca screener is not public)"""
     logger.info("Discovering today's most active stocks...")
     fallback = ["SPY", "QQQ", "IWM", "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "TSLA", "META", "PLTR", "AMD", "JPM", "BAC", "WFC", "XOM", "CVX"]
     logger.info(f"Using fallback: {len(fallback)} stocks")
     return fallback
 
 def add_features_and_target(df):
-    """Add all features + target label"""
+    # (your existing add_features_and_target — keep it exactly as it is)
     df['Typical_Price'] = (df['High'] + df['Low'] + df['Close']) / 3
     df['TP_Volume'] = df['Typical_Price'] * df['Volume']
     df['Cum_TP_Volume'] = df['TP_Volume'].cumsum()
