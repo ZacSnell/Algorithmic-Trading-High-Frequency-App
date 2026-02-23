@@ -53,5 +53,456 @@
     },
     "test_accuracy": 0.9803184431667403,
     "insight": "Strongest signal: High_Low_Range"
+  },
+  {
+    "date": "2026-02-23T01:38:59.480316-05:00",
+    "specialist": "momentum",
+    "top_features": {
+      "MACD_Hist": 0.8033809134504821,
+      "MACD": 0.19661908654951787,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9343712719530058,
+    "insight": "Strongest signal: MACD_Hist"
+  },
+  {
+    "date": "2026-02-23T01:39:54.609415-05:00",
+    "specialist": "reversion",
+    "top_features": {
+      "ZScore": 1.0,
+      "Bollinger_Width": 0.0,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9960284501895169,
+    "insight": "Strongest signal: ZScore"
+  },
+  {
+    "date": "2026-02-23T01:40:56.579959-05:00",
+    "specialist": "volume",
+    "top_features": {
+      "OBV": 0.36718194868639376,
+      "Volume": 0.32659183453433865,
+      "Volume_SMA_Ratio": 0.30622621677926753
+    },
+    "test_accuracy": 0.9398076138989142,
+    "insight": "Strongest signal: OBV"
+  },
+  {
+    "date": "2026-02-23T01:42:00.644524-05:00",
+    "specialist": "volatility",
+    "top_features": {
+      "Volatility_Ratio": 0.9309000153272204,
+      "ATR": 0.06909998467277953,
+      "Bollinger_Width": 0.0
+    },
+    "test_accuracy": 0.9960284501895169,
+    "insight": "Strongest signal: Volatility_Ratio"
+  },
+  {
+    "date": "2026-02-23T01:42:49.204295-05:00",
+    "specialist": "breakout",
+    "top_features": {
+      "Volume": 0.41124691185498047,
+      "Close_vs_High": 0.337877820532365,
+      "High_Low_Range": 0.2508752676126546
+    },
+    "test_accuracy": 0.939701907249966,
+    "insight": "Strongest signal: Volume"
+  },
+  {
+    "date": "2026-02-23T01:43:02.882334-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:03.818713-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:04.753071-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:05.716175-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:06.694100-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:07.669832-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:08.625160-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:09.587105-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:10.567757-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:12.738228-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:14.487133-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:16.713053-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:19.301625-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:21.322389-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:22.969900-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:24.426657-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:25.521080-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:27.022753-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:28.187325-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:29.167010-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:30.096661-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:31.079903-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:32.007795-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:32.941642-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:33.913494-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:34.873138-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:35.834436-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:36.799691-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:37.745918-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:38.665348-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:39.618252-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:40.551587-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:41.540487-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:42.496962-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:43.371700-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:44.304869-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:45.223674-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:46.132467-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:47.059411-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:47.784685-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:48.734162-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:49.690689-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:50.689704-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
+  },
+  {
+    "date": "2026-02-23T01:43:51.641222-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0,
+    "hot_stocks": {
+      "SPY": 0.0
+    }
   }
 ]
