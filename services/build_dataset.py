@@ -1,4 +1,4 @@
-# build_dataset.py
+# build_dataset.py - FIXED DST ERROR
 from config import *
 import numpy as np
 import json
@@ -11,7 +11,11 @@ def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
     params = {'drift': 0.0005, 'volatility': 0.018}
     returns = np.random.normal(params['drift'], params['volatility'], num_days)
     prices = initial_price * np.exp(np.cumsum(returns))
-    dates = pd.date_range(end=datetime.now(tz=TIMEZONE), periods=num_days, freq='D')
+
+    # FIXED: Generate dates without timezone first, then localize with ambiguous='infer'
+    dates = pd.date_range(end=datetime.now(), periods=num_days, freq='D')
+    dates = dates.tz_localize(TIMEZONE, ambiguous='infer', nonexistent='shift_forward')
+
     df = pd.DataFrame({
         'Open': prices * np.random.uniform(0.99, 1.01, num_days),
         'Close': prices,
@@ -19,6 +23,7 @@ def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
         'Low': prices * np.random.uniform(0.97, 1.00, num_days),
         'Volume': np.random.uniform(1_000_000, 10_000_000, num_days).astype(int)
     }, index=dates)
+
     df['High'] = df[['Open', 'Close', 'High']].max(axis=1)
     df['Low'] = df[['Open', 'Close', 'Low']].min(axis=1)
     return df.sort_index()
