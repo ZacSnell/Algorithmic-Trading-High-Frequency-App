@@ -1,0 +1,57 @@
+[
+  {
+    "date": "2026-02-23T00:09:27.673473-05:00",
+    "specialist": "momentum",
+    "top_features": {
+      "MACD_Hist": 0.7732025663159565,
+      "MACD": 0.22679743368404354,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9307828394515701,
+    "insight": "Strongest signal: MACD_Hist"
+  },
+  {
+    "date": "2026-02-23T00:09:38.107250-05:00",
+    "specialist": "reversion",
+    "top_features": {
+      "ZScore": 1.0,
+      "Bollinger_Width": 0.0,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9822349992628631,
+    "insight": "Strongest signal: ZScore"
+  },
+  {
+    "date": "2026-02-23T00:09:51.568527-05:00",
+    "specialist": "volume",
+    "top_features": {
+      "OBV": 0.34507870052099215,
+      "Volume": 0.332099380718449,
+      "Volume_SMA_Ratio": 0.3228219187605589
+    },
+    "test_accuracy": 0.9825298540468819,
+    "insight": "Strongest signal: OBV"
+  },
+  {
+    "date": "2026-02-23T00:10:06.640871-05:00",
+    "specialist": "volatility",
+    "top_features": {
+      "Volatility_Ratio": 0.5097146457657389,
+      "ATR": 0.49028535423426106,
+      "Bollinger_Width": 0.0
+    },
+    "test_accuracy": 0.9823824266548725,
+    "insight": "Strongest signal: Volatility_Ratio"
+  },
+  {
+    "date": "2026-02-23T00:10:19.328951-05:00",
+    "specialist": "breakout",
+    "top_features": {
+      "High_Low_Range": 0.3444136947872138,
+      "Volume": 0.3313977309874553,
+      "Close_vs_High": 0.32418857422533087
+    },
+    "test_accuracy": 0.9803184431667403,
+    "insight": "Strongest signal: High_Low_Range"
+  }
+]
