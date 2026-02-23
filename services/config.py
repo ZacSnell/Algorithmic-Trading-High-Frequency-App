@@ -1,7 +1,4 @@
 # config.py
-# Central place for imports, constants, environment variables, clients, and helpers
-# Use: from config import *  in other files
-
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -9,281 +6,64 @@ import pytz
 import pandas as pd
 import numpy as np
 import yfinance as yf
-
-# Load environment variables from .env file
 from dotenv import load_dotenv
 
-# Try multiple locations for .env file
-possible_env_paths = [
-    Path.cwd() / ".env",                    # Current working directory
-    Path(__file__).parent / ".env",         # Services directory
-    Path(__file__).parent.parent / ".env",  # Root directory
-]
-
-env_path = None
-for path in possible_env_paths:
-    if path.exists():
-        env_path = path
-        break
-
+# Load .env
+possible_env_paths = [Path.cwd() / ".env", Path(__file__).parent / ".env", Path(__file__).parent.parent / ".env"]
+env_path = next((p for p in possible_env_paths if p.exists()), None)
 if env_path:
-    load_dotenv(dotenv_path=env_path)
-    # Also manually read and set env vars as fallback for PyInstaller
-    try:
-        with open(env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    os.environ[key.strip()] = value.strip()
-    except Exception as e:
-        print(f"Warning: Could not manually load .env: {e}")
-else:
-    print("WARNING: No .env file found in any expected location")
+    load_dotenv(env_path)
 
-# TA-Lib with safe fallback
+# TA-Lib fallback
 try:
     import talib
     TALIB_AVAILABLE = True
 except ImportError:
     TALIB_AVAILABLE = False
-    print("TA-Lib not found - using pandas EMA fallback for MACD")
 
-# Alpaca imports (modern alpaca-py)
 from alpaca.trading.client import TradingClient
 from alpaca.data import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
-
-# ML imports (expand later as needed)
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, roc_auc_score, precision_score, recall_score
 from sklearn.preprocessing import StandardScaler
 import joblib
-import schedule
-import threading
-
-# Logging
 import logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-# ────────────────────────────────────────────────
-#  LOAD SECRETS FROM ENVIRONMENT (.env file)
-# ────────────────────────────────────────────────
-API_KEY    = os.getenv("ALPACA_API_KEY")
+API_KEY = os.getenv("ALPACA_API_KEY")
 API_SECRET = os.getenv("ALPACA_SECRET_KEY")
-
-if not API_KEY or not API_SECRET:
-    raise ValueError(
-        "ALPACA_API_KEY and ALPACA_SECRET_KEY must be set in .env file. "
-        "Copy .env.example and add your credentials!"
-    )
-
 PAPER_MODE = os.getenv("PAPER_MODE", "True").lower() in ("true", "1", "yes")
 
-# Constants
-TIMEZONE          = pytz.timezone('US/Eastern')
-NUM_TOP_SYMBOLS   = 20
-FETCH_TOP_BEFORE_FILTER = 50
-MAX_PRICE_FILTER  = 20.0
-MIN_PRICE_FILTER  = 1.0
-DAYS_BACK         = 30
-INTERVAL          = "1m"          # 1 minute bars
-LOOKAHEAD_BARS    = 5
-PROFIT_THRESHOLD  = 0.001         # 0.1%
-
-# ─────────────────────────────────────────────────
-#  ML / Trading Strategy Configuration
-# ─────────────────────────────────────────────────
-MODELS_DIR        = Path(__file__).parent / "models"
+TIMEZONE = pytz.timezone('US/Eastern')
+MODELS_DIR = Path(__file__).parent / "models"
 MODELS_DIR.mkdir(exist_ok=True)
+KNOWLEDGE_BASE = MODELS_DIR / "knowledge_base.json"
+HISTORICAL_EVENTS_FILE = MODELS_DIR / "historical_events.json"
 
-LOGS_DIR          = Path(__file__).parent / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
+TRADE_CLIENT = TradingClient(API_KEY, API_SECRET, paper=PAPER_MODE)
+DATA_CLIENT = StockHistoricalDataClient(API_KEY, API_SECRET)
 
-TRADES_LOG_FILE   = LOGS_DIR / "trades.csv"  # Daily updated
-STRATEGY_LOGS_DIR = LOGS_DIR / "strategies"
-STRATEGY_LOGS_DIR.mkdir(exist_ok=True)
-
-# Model configuration
-ML_MODEL_TYPE     = os.getenv("ML_MODEL_TYPE", "random_forest")  # or "gradient_boosting"
-MIN_TRAINING_SAMPLES = 500
-MIN_CONFIDENCE    = 0.65            # Minimum prediction confidence to trade
-TRAIN_TEST_SPLIT  = 0.2
-
-# Risk management - Load from .env if present, otherwise use defaults
-try:
-    POSITION_SIZE_PCT = int(os.getenv("POSITION_SIZE_PCT", 50))
-except ValueError:
-    POSITION_SIZE_PCT = 50
-
-try:
-    MAX_OPEN_POSITIONS = int(os.getenv("MAX_OPEN_POSITIONS", 10))
-except ValueError:
-    MAX_OPEN_POSITIONS = 10
-
-try:
-    STOP_LOSS_PCT = float(os.getenv("STOP_LOSS_PCT", 0.02))
-except ValueError:
-    STOP_LOSS_PCT = 0.02
-
-try:
-    TAKE_PROFIT_PCT = float(os.getenv("TAKE_PROFIT_PCT", 0.04))
-except ValueError:
-    TAKE_PROFIT_PCT = 0.04
-
-# Position sizing presets (as percentages of buying power)
-POSITION_SIZE_PRESETS = [25, 50, 75, 100]  # Default presets for UI selector
-
-# ─────────────────────────────────────────────────
-#  Trading Strategies
-# ─────────────────────────────────────────────────
-STRATEGIES = {
-    'macd_crossover': {
-        'name': 'MACD Crossover',
-        'description': 'Swing trading using MACD signals',
-        'lookback_bars': 20,
-        'min_confidence': 0.65,
-        'risk_per_trade': 0.02,
-        'enabled': True
-    },
-    'scalping': {
-        'name': 'Scalping',
-        'description': 'Quick trades capturing small moves (1-5 min)',
-        'lookback_bars': 5,
-        'min_confidence': 0.70,
-        'risk_per_trade': 0.01,
-        'enabled': True
-    },
-    'options_scalping': {
-        'name': 'Options Scalping',
-        'description': 'Scalping options contracts (EXPERIMENTAL)',
-        'lookback_bars': 5,
-        'min_confidence': 0.75,
-        'risk_per_trade': 0.015,
-        'enabled': False  # Not yet implemented
-    },
-    'five_pillars': {
-        'name': 'Five Pillars',
-        'description': 'Multi-factor analysis strategy (EXPERIMENTAL)',
-        'lookback_bars': 50,
-        'min_confidence': 0.75,
-        'risk_per_trade': 0.02,
-        'enabled': False  # Not yet implemented
-    }
+SPECIALISTS = {
+    'momentum': {'name': 'Momentum Agent', 'type': 'ml', 'features': ['MACD', 'MACD_Hist', 'RSI', 'ADX'], 'model_type': 'random_forest', 'min_confidence': 0.68},
+    'reversion': {'name': 'Mean-Reversion Agent', 'type': 'ml', 'features': ['Bollinger_Width', 'RSI', 'ZScore'], 'model_type': 'gradient_boosting', 'min_confidence': 0.72},
+    'volume': {'name': 'Volume Agent', 'type': 'ml', 'features': ['Volume', 'Volume_SMA_Ratio', 'OBV'], 'model_type': 'random_forest', 'min_confidence': 0.65},
+    'volatility': {'name': 'Volatility Agent', 'type': 'ml', 'features': ['ATR', 'Bollinger_Width', 'Volatility_Ratio'], 'model_type': 'gradient_boosting', 'min_confidence': 0.70},
+    'breakout': {'name': 'Breakout Agent', 'type': 'ml', 'features': ['High_Low_Range', 'Close_vs_High', 'Volume'], 'model_type': 'random_forest', 'min_confidence': 0.67},
+    'news_catalyst': {'name': 'News Catalyst Agent', 'type': 'news', 'min_confidence': 0.60},
+    'twitter_sentiment': {'name': 'Twitter Sentiment Agent', 'type': 'twitter', 'min_confidence': 0.60},
 }
 
-# Active strategy (can be switched)
-ACTIVE_STRATEGY = 'macd_crossover'
+MIN_CONFIDENCE = 0.60
+POSITION_SIZE_PCT = 50
+MAX_OPEN_POSITIONS = 10
+STOP_LOSS_PCT = 0.02
+TAKE_PROFIT_PCT = 0.04
+LOOKAHEAD_BARS = 5
+PROFIT_THRESHOLD = 0.001
+TRAIN_TEST_SPLIT = 0.2
 
-# Market hours (US/Eastern)
-MARKET_OPEN_HOUR   = 9              # 9:30 AM
-MARKET_OPEN_MIN    = 30
-MARKET_CLOSE_HOUR  = 16             # 4:00 PM
-MARKET_CLOSE_MIN   = 0
-
-# Training schedule (when market is closed)
-TRAIN_TIME         = "20:00"        # 8 PM ET - after market close
-REBALANCE_TIME     = "04:00"        # 4 AM ET - before market open
-
-# Shared clients (created once here)
-trade_client = TradingClient(API_KEY, API_SECRET, paper=PAPER_MODE)
-data_client  = StockHistoricalDataClient(API_KEY, API_SECRET)
-
-# Helpers
-def now_eastern():
-    return datetime.now(TIMEZONE)
-
-def get_date_range(days_back=DAYS_BACK):
-    end   = now_eastern()
-    start = end - timedelta(days=days_back * 1.5)  # buffer for weekends/holidays
-    return start, end
-
-def save_settings_to_env(settings_dict):
-    """
-    Save trading settings to .env file for persistence across restarts.
-    Preserves comments, blank lines, and other configuration.
-    
-    Args:
-        settings_dict: Dictionary of settings to save
-            - position_size_pct: percentage of buying power to use per position
-            - stop_loss_pct: stop loss percentage
-            - take_profit_pct: take profit percentage
-            - max_open_positions: max concurrent positions
-            - ml_model_type: "random_forest" or "gradient_boosting"
-    
-    Returns:
-        bool: True if successful, False otherwise
-    """
-    global env_path, POSITION_SIZE_PCT, STOP_LOSS_PCT, TAKE_PROFIT_PCT, MAX_OPEN_POSITIONS, ML_MODEL_TYPE
-    
-    if not env_path or not env_path.exists():
-        logger.error("Cannot save settings: .env file not found")
-        return False
-    
-    try:
-        # Read current .env file preserving structure (comments, blank lines, etc.)
-        with open(env_path, 'r') as f:
-            lines = f.readlines()
-        
-        # Create mapping of keys to update
-        updates = {}
-        if 'position_size_pct' in settings_dict:
-            updates['POSITION_SIZE_PCT'] = settings_dict['position_size_pct']
-            POSITION_SIZE_PCT = settings_dict['position_size_pct']
-        if 'stop_loss_pct' in settings_dict:
-            updates['STOP_LOSS_PCT'] = settings_dict['stop_loss_pct']
-            STOP_LOSS_PCT = settings_dict['stop_loss_pct']
-        if 'take_profit_pct' in settings_dict:
-            updates['TAKE_PROFIT_PCT'] = settings_dict['take_profit_pct']
-            TAKE_PROFIT_PCT = settings_dict['take_profit_pct']
-        if 'max_open_positions' in settings_dict:
-            updates['MAX_OPEN_POSITIONS'] = settings_dict['max_open_positions']
-            MAX_OPEN_POSITIONS = settings_dict['max_open_positions']
-        if 'ml_model_type' in settings_dict:
-            updates['ML_MODEL_TYPE'] = settings_dict['ml_model_type']
-            ML_MODEL_TYPE = settings_dict['ml_model_type']
-        
-        # Process lines, updating only matching keys
-        updated_keys = set()
-        output_lines = []
-        
-        for line in lines:
-            # Check if this line contains a key we want to update
-            updated = False
-            line_stripped = line.strip()
-            
-            if line_stripped and not line_stripped.startswith('#') and '=' in line_stripped:
-                key = line_stripped.split('=', 1)[0].strip()
-                if key in updates:
-                    output_lines.append(f"{key}={updates[key]}\n")
-                    updated_keys.add(key)
-                    updated = True
-            
-            # If we didn't update this line, keep it as-is
-            if not updated:
-                output_lines.append(line)
-        
-        # Add any new keys that weren't in the original file
-        for key, value in updates.items():
-            if key not in updated_keys:
-                output_lines.append(f"{key}={value}\n")
-        
-        # Write back to .env file
-        with open(env_path, 'w') as f:
-            f.writelines(output_lines)
-        
-        logger.info(f"Settings saved to {env_path}")
-        return True
-    
-    except Exception as e:
-        logger.error(f"Error saving settings: {e}")
-        return False
-
-logger.info("config.py loaded successfully")
+logger.info("✅ config.py loaded with 7-agent system")
