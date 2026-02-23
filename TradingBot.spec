@@ -5,7 +5,7 @@ a = Analysis(
     ['services\\live_trader.py'],
     pathex=[],
     binaries=[],
-    datas=[('services', 'services')],
+    datas=[('services', 'services'), ('.env', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
