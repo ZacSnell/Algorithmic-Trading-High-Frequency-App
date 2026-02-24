@@ -1,4 +1,4 @@
-# build_dataset.py - REAL HISTORICAL DATA (FINAL)
+# build_dataset.py - REAL 90-DAY DATA
 from config import *
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame
@@ -7,11 +7,11 @@ import numpy as np
 
 def download_intraday(symbol, strategy='macd_crossover'):
     try:
-        logger.info(f"Fetching REAL 1-min data for {symbol} (last 30 days)...")
+        logger.info(f"Fetching REAL 1-min data for {symbol} (last 90 days)...")
         request_params = StockBarsRequest(
             symbol_or_symbols=symbol,
             timeframe=TimeFrame.Minute,
-            start=(datetime.now(TIMEZONE) - timedelta(days=30)).date(),
+            start=(datetime.now(TIMEZONE) - timedelta(days=90)).date(),
             limit=10000
         )
         bars = data_client.get_stock_bars(request_params).df
@@ -101,7 +101,7 @@ def add_features_and_target(df):
     return df
 
 if __name__ == "__main__":
-    logger.info("Starting REAL dataset build...")
+    logger.info("Starting REAL 90-day dataset build...")
     symbols = get_most_active_symbols_with_price_filter()
     strategies = ['macd_crossover', 'scalping']
     for strategy in strategies:
@@ -117,4 +117,4 @@ if __name__ == "__main__":
             combined = pd.concat(all_data.values(), keys=all_data.keys())
             combined.to_csv(f"combined_{strategy}_dataset.csv")
             logger.info(f"Combined {strategy} dataset: {len(combined):,} real bars")
-    logger.info("✅ Real dataset build complete!")
+    logger.info("✅ Real 90-day dataset build complete!")

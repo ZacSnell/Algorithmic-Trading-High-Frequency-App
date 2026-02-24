@@ -1,4 +1,4 @@
-# services/gui_dashboard.py - UPDATED TO SHOW ACTIVE TRADING
+# services/gui_dashboard.py - ENHANCED WITH VOTE LOGGING
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -20,7 +20,7 @@ class TradingDashboard(QMainWindow):
         self.setup_ui()
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_dashboard)
-        self.timer.start(3000)  # update every 3 seconds
+        self.timer.start(3000)
         self.update_dashboard()
 
     def setup_ui(self):
@@ -59,7 +59,7 @@ class TradingDashboard(QMainWindow):
         self.ensemble_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.ensemble_label)
 
-        self.recent_trades_label = QLabel("Recent Trades")
+        self.recent_trades_label = QLabel("Recent Trades & Potential Signals")
         self.recent_trades_label.setFont(QFont("Arial", 14, QFont.Bold))
         layout.addWidget(self.recent_trades_label)
         self.recent_trades_text = QTextEdit()
@@ -86,7 +86,6 @@ class TradingDashboard(QMainWindow):
             self.table.setItem(row, 4, QTableWidgetItem("$0"))
             row += 1
 
-        # Knowledge Summary
         if KNOWLEDGE_BASE.exists():
             try:
                 with open(KNOWLEDGE_BASE, 'r') as f:
@@ -96,7 +95,6 @@ class TradingDashboard(QMainWindow):
             except:
                 self.kb_text.setText("Knowledge base loading...")
 
-        # Ensemble Status (live prediction)
         try:
             df = self.get_sample_features()
             if df is not None:
@@ -107,7 +105,6 @@ class TradingDashboard(QMainWindow):
         except:
             self.ensemble_label.setText("Ensemble: HOLD (0.0%) — 0/7 agree")
 
-        # Recent Trades
         self.update_recent_trades()
 
     def update_recent_trades(self):

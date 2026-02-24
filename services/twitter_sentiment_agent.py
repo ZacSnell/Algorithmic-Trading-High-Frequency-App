@@ -1,4 +1,4 @@
-# services/twitter_sentiment_agent.py - IMPROVED REAL TWEETS
+# services/twitter_sentiment_agent.py - IMPROVED
 from config import *
 import requests
 from textblob import TextBlob
@@ -9,7 +9,7 @@ class TwitterSentimentAgent:
     def __init__(self):
         self.name = "twitter_sentiment"
 
-    def _search_tweets(self, query, count=25):
+    def _search_tweets(self, query, count=30):
         try:
             url = f"https://nitter.poast.org/search?f=tweets&q={query}&since=&until=&near="
             r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
@@ -33,13 +33,13 @@ class TwitterSentimentAgent:
         stock_signals = {}
 
         for sym in symbols[:5]:
-            tweets = self._search_tweets(sym, count=25)
+            tweets = self._search_tweets(sym, count=30)
             if not tweets:
                 stock_signals[sym] = 0.0
                 continue
             sentiments = [TextBlob(t).sentiment.polarity for t in tweets]
             bias = sum(sentiments) / len(sentiments) if sentiments else 0
-            cat = sum(1 for t in tweets if any(k in t.lower() for k in ["earnings", "fda", "beat", "guidance", "squeeze", "merger", "short"])) / len(tweets)
+            cat = sum(1 for t in tweets if any(k in t.lower() for k in ["earnings", "fda", "beat", "guidance", "squeeze", "merger", "short", "rally", "crash"])) / len(tweets)
             stock_signals[sym] = bias + cat * 0.6
             total_bias += bias
             catalyst_score += cat
