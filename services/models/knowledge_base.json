@@ -1861,5 +1861,72 @@
     "specialist": "twitter_sentiment",
     "bias": 0.0,
     "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:32:05.486550-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:32:13.264260-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:34:55.405143-05:00",
+    "specialist": "momentum",
+    "top_features": {
+      "MACD_Hist": 0.8026954216729133,
+      "MACD": 0.1973045783270867,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9265956507665597,
+    "insight": "Strongest signal: MACD_Hist"
+  },
+  {
+    "date": "2026-02-24T13:35:57.562311-05:00",
+    "specialist": "reversion",
+    "top_features": {
+      "ZScore": 1.0,
+      "Bollinger_Width": 0.0,
+      "RSI": 0.0
+    },
+    "test_accuracy": 0.9946149545360916,
+    "insight": "Strongest signal: ZScore"
+  },
+  {
+    "date": "2026-02-24T13:37:12.237865-05:00",
+    "specialist": "volume",
+    "top_features": {
+      "Volume": 0.3391377811897429,
+      "Volume_SMA_Ratio": 0.33115069726782703,
+      "OBV": 0.32971152154243005
+    },
+    "test_accuracy": 0.9913339022452403,
+    "insight": "Strongest signal: Volume"
+  },
+  {
+    "date": "2026-02-24T13:38:21.801338-05:00",
+    "specialist": "volatility",
+    "top_features": {
+      "Volatility_Ratio": 0.8427549086538885,
+      "ATR": 0.15724509134611142,
+      "Bollinger_Width": 0.0
+    },
+    "test_accuracy": 0.9947620869258158,
+    "insight": "Strongest signal: Volatility_Ratio"
+  },
+  {
+    "date": "2026-02-24T13:39:14.052779-05:00",
+    "specialist": "breakout",
+    "top_features": {
+      "Volume": 0.3995635398801408,
+      "Close_vs_High": 0.3220252667615747,
+      "High_Low_Range": 0.2784111933582845
+    },
+    "test_accuracy": 0.9747815084012594,
+    "insight": "Strongest signal: Volume"
   }
 ]

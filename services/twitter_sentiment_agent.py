@@ -1,69 +1,91 @@
-# services/twitter_sentiment_agent.py - IMPROVED
-from config import *
-import requests
-from textblob import TextBlob
 import json
-from datetime import datetime
+import time
+import datetime
+import pandas as pd
+from ntscraper import Nitter
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import os
 
 class TwitterSentimentAgent:
-    def __init__(self):
-        self.name = "twitter_sentiment"
+    def __init__(self, watchlist=None):
+        self.watchlist = watchlist or ["AAPL", "TSLA", "NVDA", "AMD", "META"]  # edit in config.py later
+        self.scraper = Nitter(log_level=1, skip_instance_check=False)
+        self.analyzer = SentimentIntensityAnalyzer()
+        self.kb_path = "knowledge_base.json"
+        self._load_knowledge_base()
+        self.avg_volume = {ticker: 5.0 for ticker in self.watchlist}  # rolling average tweets/hour
 
-    def _search_tweets(self, query, count=30):
+    def _load_knowledge_base(self):
+        if os.path.exists(self.kb_path):
+            with open(self.kb_path, 'r') as f:
+                self.kb = json.load(f)
+        else:
+            self.kb = {"insights": [], "hot_mentions": []}
+
+    def _save_knowledge_base(self):
+        with open(self.kb_path, 'w') as f:
+            json.dump(self.kb, f, indent=2)
+
+    def _fetch_recent_tweets(self, ticker, minutes=15):
         try:
-            url = f"https://nitter.poast.org/search?f=tweets&q={query}&since=&until=&near="
-            r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
-            if r.status_code != 200:
-                return []
-            titles = []
-            for line in r.text.splitlines():
-                if "<title>" in line and "</title>" in line:
-                    title = line.split("<title>")[1].split("</title>")[0].strip()
-                    if len(title) > 15:
-                        titles.append(title)
-            return titles[:count]
+            since = (datetime.datetime.utcnow() - datetime.timedelta(minutes=minutes)).strftime("%Y-%m-%d")
+            tweets = self.scraper.get_tweets(f"${ticker} OR {ticker}", mode='search', since=since, max_results=50)
+            return tweets.get('tweets', []) if tweets else []
         except:
             return []
 
-    def predict(self, symbols=None):
-        if not symbols:
-            symbols = ["SPY", "NVDA", "TSLA"]
-        total_bias = 0.0
-        catalyst_score = 0.0
-        stock_signals = {}
+    def get_vote(self, ticker):
+        tweets = self._fetch_recent_tweets(ticker, minutes=15)
+        if len(tweets) < 3:
+            return "HOLD", 30, "Low tweet volume"
 
-        for sym in symbols[:5]:
-            tweets = self._search_tweets(sym, count=30)
-            if not tweets:
-                stock_signals[sym] = 0.0
-                continue
-            sentiments = [TextBlob(t).sentiment.polarity for t in tweets]
-            bias = sum(sentiments) / len(sentiments) if sentiments else 0
-            cat = sum(1 for t in tweets if any(k in t.lower() for k in ["earnings", "fda", "beat", "guidance", "squeeze", "merger", "short", "rally", "crash"])) / len(tweets)
-            stock_signals[sym] = bias + cat * 0.6
-            total_bias += bias
-            catalyst_score += cat
+        df = pd.DataFrame([{
+            'text': t['text'],
+            'likes': t.get('stats', {}).get('likes', 0),
+            'retweets': t.get('stats', {}).get('retweets', 0)
+        } for t in tweets])
 
-        overall_bias = total_bias / len(symbols[:5]) if symbols else 0
-        catalyst_score /= len(symbols[:5]) if symbols else 1
-        final_signal = 1 if overall_bias > 0.18 or catalyst_score > 0.45 else 0
-        confidence = min(0.95, 0.5 + abs(overall_bias) * 1.3 + catalyst_score * 1.8)
+        volume = len(df)
+        velocity = volume / (15 / 60.0)  # tweets per hour
+        self.avg_volume[ticker] = (self.avg_volume.get(ticker, 5) * 0.7 + velocity * 0.3)
 
-        entry = {
-            "date": datetime.now(TIMEZONE).isoformat(),
-            "specialist": "twitter_sentiment",
-            "bias": overall_bias,
-            "catalyst_score": catalyst_score
-        }
-        kb = json.load(open(KNOWLEDGE_BASE)) if KNOWLEDGE_BASE.exists() else []
-        kb.append(entry)
-        with open(KNOWLEDGE_BASE, 'w') as f:
-            json.dump(kb[-1000:], f, indent=2)
+        # Sentiment
+        sentiments = [self.analyzer.polarity_scores(t['text'])['compound'] for t in df['text']]
+        avg_sent = sum(sentiments) / len(sentiments)
 
-        logger.info(f"🐦 Twitter Agent → Bias: {overall_bias:.2f} | Catalysts: {catalyst_score:.2f} | Confidence: {confidence:.1%}")
-        return {
-            "specialist": "twitter_sentiment",
-            "signal": final_signal,
-            "confidence": float(confidence),
-            "rationale": f"Twitter bias {overall_bias:.2f} | Hot catalysts {catalyst_score:.2f}"
-        }
+        # Urgency boost
+        urgency_kw = ['moon', 'surge', 'pump', 'breakout', 'beat', 'approval', 'fda', 'acquisition', 'partnership', 'exploding']
+        urgency = sum(any(kw in text.lower() for kw in urgency_kw) for text in df['text']) / volume
+
+        # Catalyst score (0-1)
+        catalyst_score = (
+                max(avg_sent, 0) * 0.5 +
+                min(velocity / max(self.avg_volume[ticker], 10), 2.0) * 0.3 +
+                urgency * 0.2
+        )
+        catalyst_score = max(0.0, min(1.0, catalyst_score))
+
+        confidence = int(catalyst_score * 100)
+
+        if catalyst_score > 0.65 and volume > 10:
+            vote = "BUY"
+            reason = f"HOT CATALYST: {volume} tweets, {avg_sent:.2f} sentiment, {urgency:.0%} urgency"
+            self.kb["hot_mentions"].append({
+                "timestamp": datetime.datetime.utcnow().isoformat(),
+                "ticker": ticker,
+                "score": catalyst_score,
+                "reason": reason
+            })
+            if len(self.kb["hot_mentions"]) > 50:
+                self.kb["hot_mentions"] = self.kb["hot_mentions"][-50:]
+            self._save_knowledge_base()
+            return vote, confidence, reason
+
+        return "HOLD", confidence, f"Neutral ({catalyst_score:.2f} catalyst score)"
+
+# Test it live
+if __name__ == "__main__":
+    agent = TwitterSentimentAgent()
+    for ticker in agent.watchlist:
+        vote, conf, reason = agent.get_vote(ticker)
+        print(f"{ticker}: {vote} ({conf}%) → {reason}")
