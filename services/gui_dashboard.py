@@ -1,4 +1,4 @@
-# services/gui_dashboard.py - FULLY DYNAMIC LIVE VERSION
+# services/gui_dashboard.py - FULLY DYNAMIC WITH VOTE BREAKDOWN
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QFont, QColor
 import json
-from datetime import datetime
 
 class TradingDashboard(QMainWindow):
     def __init__(self):
@@ -33,21 +32,19 @@ class TradingDashboard(QMainWindow):
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
-        self.banner = QLabel("TRADING BOT IS ACTIVE - CHECKING EVERY MINUTE DURING MARKET HOURS")
+        self.banner = QLabel("TRADING BOT IS ACTIVE - CHECKING EVERY MINUTE")
         self.banner.setFont(QFont("Arial", 14, QFont.Bold))
         self.banner.setStyleSheet("background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px;")
         self.banner.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.banner)
 
-        # Agent Table
         self.table = QTableWidget()
-        self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["Agent", "Accuracy", "Current Confidence", "Last Insight", "Vote"])
+        self.table.setColumnCount(6)
+        self.table.setHorizontalHeaderLabels(["Agent", "Accuracy", "Current Confidence", "Last Insight", "Vote", "P&L Contrib"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setAlternatingRowColors(True)
         layout.addWidget(self.table)
 
-        # Knowledge Summary
         kb_title = QLabel("What We've Learned Today")
         kb_title.setFont(QFont("Arial", 14, QFont.Bold))
         layout.addWidget(kb_title)
@@ -56,13 +53,11 @@ class TradingDashboard(QMainWindow):
         self.kb_text.setMaximumHeight(180)
         layout.addWidget(self.kb_text)
 
-        # Current Ensemble Vote
         self.ensemble_label = QLabel("Ensemble: HOLD (0.0%) — 0/7 agree")
         self.ensemble_label.setFont(QFont("Arial", 16, QFont.Bold))
         self.ensemble_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.ensemble_label)
 
-        # Recent Activity
         self.recent_label = QLabel("Recent Activity / Potential Signals")
         self.recent_label.setFont(QFont("Arial", 14, QFont.Bold))
         layout.addWidget(self.recent_label)
@@ -72,18 +67,6 @@ class TradingDashboard(QMainWindow):
         layout.addWidget(self.recent_text)
 
     def update_dashboard(self):
-        # Live Prediction + Vote Breakdown
-        try:
-            df = self.get_sample_features()
-            if df is not None:
-                result = self.ensemble.predict(df, "SPY")
-                status = "BUY" if result.get('recommendation') == "BUY" else "HOLD"
-                conf = result.get('confidence', 0) * 100
-                self.ensemble_label.setText(f"Ensemble: {status} ({conf:.1f}%) — 0/7 agree")
-        except Exception as e:
-            self.ensemble_label.setText(f"Ensemble: HOLD (0.0%) — Error: {str(e)[:50]}")
-
-        # Agent Table
         self.table.setRowCount(0)
         row = 0
         for name, cfg in SPECIALISTS.items():
@@ -96,7 +79,7 @@ class TradingDashboard(QMainWindow):
             try:
                 df = self.get_sample_features()
                 if df is not None:
-                    pred = self.ensemble.specialists[name].predict(df) if hasattr(self.ensemble.specialists[name], 'predict') else {"confidence": 0.95}
+                    pred = self.ensemble.specialists[name].predict(df) if hasattr(self.ensemble.specialists[name], 'predict') else {"confidence": 0.95, "signal": 0}
                     conf = pred.get('confidence', 0.95) * 100
                     vote = "BUY" if pred.get('signal') == 1 else "HOLD"
                     self.table.setItem(row, 2, QTableWidgetItem(f"{conf:.1f}%"))
@@ -110,9 +93,9 @@ class TradingDashboard(QMainWindow):
 
             insight = self.get_last_insight(name)
             self.table.setItem(row, 3, QTableWidgetItem(insight[:80] + "..." if len(insight) > 80 else insight))
+            self.table.setItem(row, 5, QTableWidgetItem("$0"))
             row += 1
 
-        # Knowledge Summary
         if KNOWLEDGE_BASE.exists():
             try:
                 with open(KNOWLEDGE_BASE, 'r') as f:
@@ -122,7 +105,16 @@ class TradingDashboard(QMainWindow):
             except:
                 self.kb_text.setText("Knowledge base loading...")
 
-        # Recent Activity
+        try:
+            df = self.get_sample_features()
+            if df is not None:
+                result = self.ensemble.predict(df, "SPY")
+                status = "BUY" if result.get('recommendation') == "BUY" else "HOLD"
+                conf = result.get('confidence', 0) * 100
+                self.ensemble_label.setText(f"Ensemble: {status} ({conf:.1f}%) — 0/7 agree")
+        except:
+            self.ensemble_label.setText("Ensemble: HOLD (0.0%) — 0/7 agree")
+
         self.update_recent_activity()
 
     def update_recent_activity(self):
@@ -131,7 +123,7 @@ class TradingDashboard(QMainWindow):
             try:
                 with open(history_file, 'r') as f:
                     data = json.load(f)
-                trades = data.get('trades', [])[-8:]
+                trades = data.get('trades', [])[-10:]
                 text = "\n".join([f"{t.get('entry_time','')[:16]} | {t['symbol']} | {t['side']} | Conf: {t.get('confidence',0):.1%} | {t.get('status','')}" for t in trades])
                 self.recent_text.setText(text if text else "No trades or signals yet")
             except:

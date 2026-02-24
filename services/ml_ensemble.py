@@ -1,4 +1,4 @@
-# services/ml_ensemble.py
+# services/ml_ensemble.py - DYNAMIC WITH LOWER THRESHOLD
 from config import *
 from ml_specialist import Specialist
 from news_agent import NewsCatalystAgent
@@ -22,6 +22,7 @@ class EnsembleCoordinator:
 
     def predict(self, features_df, symbol=None):
         votes = []
+        print("\n--- INDIVIDUAL VOTES ---")  # Show live votes in console
         for name, agent in self.specialists.items():
             if isinstance(agent, Specialist):
                 pred = agent.predict(features_df)
@@ -29,10 +30,13 @@ class EnsembleCoordinator:
                 pred = self.news_agent.predict([symbol])
             else:
                 pred = self.twitter_agent.predict([symbol])
-            votes.append((pred['signal'], pred['confidence'] * 1.0, pred['rationale']))
+            votes.append((pred['signal'], pred['confidence'], pred['rationale']))
+            print(f"  {name:15} → Signal: {pred['signal']} | Conf: {pred['confidence']:.1%} | {pred['rationale']}")
+
         buy_conf = sum(w for s, w, r in votes if s == 1)
         total = sum(w for _, w, _ in votes)
-        final_signal = 1 if buy_conf > total * 0.35 else 0
+        final_signal = 1 if buy_conf > total * 0.25 else 0   # LOWERED for dynamic testing
         final_conf = buy_conf / total if total > 0 else 0
+
         logger.info(f"🤖 ENSEMBLE → {'BUY' if final_signal else 'HOLD'} ({final_conf:.1%}) | {len([v for v,_,_ in votes if v==1])}/7 specialists agree")
         return {"signal": final_signal, "confidence": final_conf, "recommendation": "BUY" if final_signal and final_conf >= MIN_CONFIDENCE else "HOLD"}
