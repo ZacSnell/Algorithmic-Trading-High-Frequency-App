@@ -1,4 +1,4 @@
-# services/twitter_sentiment_agent.py - IMPROVED VERSION
+# services/twitter_sentiment_agent.py - IMPROVED REAL TWEETS
 from config import *
 import requests
 from textblob import TextBlob

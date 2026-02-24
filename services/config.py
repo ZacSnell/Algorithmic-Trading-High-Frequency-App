@@ -1,4 +1,4 @@
-# config.py - FINAL VERSION FOR .EXE (lowercase clients)
+# config.py - COMPLETE FINAL VERSION WITH ALL CONSTANTS
 import os
 import sys
 from pathlib import Path
@@ -54,7 +54,15 @@ MODELS_DIR = Path(__file__).parent / "models"
 MODELS_DIR.mkdir(exist_ok=True)
 KNOWLEDGE_BASE = MODELS_DIR / "knowledge_base.json"
 
-# LOWERCASE CLIENTS (matches your live_trader.py)
+# MISSING CONSTANTS FOR MARKET SCHEDULER
+TRAIN_TIME = "20:00"          # 8 PM ET - daily training
+REBALANCE_TIME = "04:00"      # 4 AM ET - daily rebalance
+MARKET_OPEN_HOUR = 9
+MARKET_OPEN_MIN = 30
+MARKET_CLOSE_HOUR = 16
+MARKET_CLOSE_MIN = 0
+
+# LOWERCASE CLIENTS (for live_trader.py)
 trade_client = TradingClient(API_KEY, API_SECRET, paper=PAPER_MODE)
 data_client = StockHistoricalDataClient(API_KEY, API_SECRET)
 

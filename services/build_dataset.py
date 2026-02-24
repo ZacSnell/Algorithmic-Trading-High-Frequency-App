@@ -6,49 +6,36 @@ from datetime import datetime, timedelta
 import numpy as np
 
 def download_intraday(symbol, strategy='macd_crossover'):
-    """Fetch REAL 1-minute bars from Alpaca (last 30 days)"""
     try:
         logger.info(f"Fetching REAL 1-min data for {symbol} (last 30 days)...")
-
         request_params = StockBarsRequest(
             symbol_or_symbols=symbol,
             timeframe=TimeFrame.Minute,
             start=(datetime.now(TIMEZONE) - timedelta(days=30)).date(),
             limit=10000
         )
-
         bars = data_client.get_stock_bars(request_params).df
-
         if bars.empty:
             logger.warning(f"No real data for {symbol}, using synthetic fallback")
             return generate_synthetic_data(symbol)
-
         df = bars.reset_index()
-        df = df.rename(columns={
-            'open': 'Open', 'high': 'High', 'low': 'Low',
-            'close': 'Close', 'volume': 'Volume', 'timestamp': 'timestamp'
-        })
+        df = df.rename(columns={'open': 'Open', 'high': 'High', 'low': 'Low', 'close': 'Close', 'volume': 'Volume', 'timestamp': 'timestamp'})
         df = df.set_index('timestamp')
-
         logger.info(f"Downloaded {len(df):,} real 1-min bars for {symbol}")
         return df
-
     except Exception as e:
         logger.warning(f"Alpaca failed for {symbol}: {e} — using synthetic fallback")
         return generate_synthetic_data(symbol)
 
 def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
-    """Synthetic fallback with DST fix"""
     logger.info(f"Generating synthetic fallback for {symbol}")
     np.random.seed(hash(symbol + strategy) % 2**32)
     initial_price = np.random.uniform(5, 100)
     params = {'drift': 0.0005, 'volatility': 0.018}
     returns = np.random.normal(params['drift'], params['volatility'], num_days)
     prices = initial_price * np.exp(np.cumsum(returns))
-
     dates = pd.date_range(end=datetime.now(), periods=num_days, freq='D')
     dates = dates.tz_localize(TIMEZONE, ambiguous='infer', nonexistent='shift_forward')
-
     df = pd.DataFrame({
         'Open': prices * np.random.uniform(0.99, 1.01, num_days),
         'Close': prices,
@@ -56,7 +43,6 @@ def generate_synthetic_data(symbol, num_days=2000, strategy='macd_crossover'):
         'Low': prices * np.random.uniform(0.97, 1.00, num_days),
         'Volume': np.random.uniform(1_000_000, 10_000_000, num_days).astype(int)
     }, index=dates)
-
     df['High'] = df[['Open', 'Close', 'High']].max(axis=1)
     df['Low'] = df[['Open', 'Close', 'Low']].min(axis=1)
     return df.sort_index()
@@ -68,7 +54,6 @@ def get_most_active_symbols_with_price_filter():
     return fallback
 
 def add_features_and_target(df):
-    # (your existing add_features_and_target — keep it exactly as it is)
     df['Typical_Price'] = (df['High'] + df['Low'] + df['Close']) / 3
     df['TP_Volume'] = df['Typical_Price'] * df['Volume']
     df['Cum_TP_Volume'] = df['TP_Volume'].cumsum()
