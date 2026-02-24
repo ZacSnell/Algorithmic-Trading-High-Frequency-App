@@ -1513,5 +1513,167 @@
     },
     "test_accuracy": 0.9406365567123613,
     "insight": "Strongest signal: Volume"
+  },
+  {
+    "date": "2026-02-24T13:24:09.846484-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:15.567691-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:21.382399-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:29.136623-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:37.324842-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:45.421688-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:24:53.193928-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:01.470342-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:09.923552-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:22.214951-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:33.635718-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:41.243364-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:49.394859-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:25:57.183325-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:05.182691-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:13.450822-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:21.687236-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:29.296528-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:37.273912-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:45.484302-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:26:53.448707-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:01.585853-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:09.394034-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:17.174638-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:25.223937-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:33.380173-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
+  },
+  {
+    "date": "2026-02-24T13:27:41.374779-05:00",
+    "specialist": "twitter_sentiment",
+    "bias": 0.0,
+    "catalyst_score": 0.0
   }
 ]
